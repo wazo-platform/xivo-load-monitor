@@ -62,6 +62,9 @@ def add_users():
     add.add_users()
 
 
+def add_confrooms():
+    add.add_confrooms()
+
 def add_agents():
     add.add_agents()
 

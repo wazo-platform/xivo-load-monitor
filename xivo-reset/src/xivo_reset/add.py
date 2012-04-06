@@ -152,3 +152,36 @@ def _get_queue_content(queue_number):
             }
         }
     }
+
+
+def add_confrooms():
+    meetme_ws = WebServices('ipbx/pbx_settings/meetme')
+    for confroom_number in xrange(conf.NB_CONFROOMS):
+        content = _get_confroom_content(confroom_number)
+        meetme_ws.add(content)
+
+
+def _get_confroom_content(confroom_number):
+    confno = str(confroom_number + conf.CONFROOMS_START_NUMBER)
+    return {
+        'meetmefeatures': {
+            'name': 'conf%s' % confroom_number,
+            'confno': confno,
+            'context': 'default',
+            'maxusers': '0',
+            'preprocess_subroutine': '',
+            'description': '',
+            'admin_typefrom': 'none',
+            'user_mode':  'all',
+            'user_announcejoinleave': 'no',
+            'user_musiconhold': 'default',
+            'emailfrom': 'no-reply+meetme@xivo.fr',
+            'emailfromname': 'XIVO PBX',
+            'emailsubject': ' XiVO  Invitation to join a conference room',
+            'emailbody': 'hello\n'
+        },
+        'meetmeroom': {
+            'pin': '0',
+            'confno': confno
+        }
+    }

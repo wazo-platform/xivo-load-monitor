@@ -165,7 +165,7 @@ def _get_confroom_content(confroom_number):
     confno = str(confroom_number + conf.CONFROOMS_START_NUMBER)
     return {
         'meetmefeatures': {
-            'name': 'conf%s' % confroom_number,
+            'name': 'conf%04d' % confroom_number,
             'confno': confno,
             'context': 'default',
             'maxusers': '0',

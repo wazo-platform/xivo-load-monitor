@@ -181,7 +181,7 @@ def _get_confroom_content(confroom_number):
             'emailbody': 'hello\n'
         },
         'meetmeroom': {
-            'pin': '0',
+            'pin': '',
             'confno': confno
         }
     }

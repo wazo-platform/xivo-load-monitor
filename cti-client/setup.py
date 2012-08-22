@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='xivo-client-sim',
-    version='1.0',
+    version='1.1',
     description='A XiVO CTI client simulator.',
     url='https://gitorious.org/xivo/xivo-tools',
     packages=['xivo_client',

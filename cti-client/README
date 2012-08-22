@@ -1,5 +1,15 @@
 Dependencies
 ============
 
-* gevent
+* gevent >= 0.13.0
+
   * pip install gevent
+
+
+Installation notes on Debian squeeze
+====================================
+
+You need the following packages to install gevent (more precisely, greenlet,
+on which gevent depends) on a plain Debian squeeze:
+
+* build-essential python-dev libevent-dev

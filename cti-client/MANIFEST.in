@@ -1,0 +1,3 @@
+include COPYING
+include etc/*.sample
+include */tests/*.py

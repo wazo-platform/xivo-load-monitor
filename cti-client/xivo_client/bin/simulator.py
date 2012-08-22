@@ -1,17 +1,32 @@
 # -*- coding: UTF-8 -*-
 
+# Copyright (C) 2012  Avencall
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 import argparse
 import logging
-import cti_client.client.step
-import cti_client.scenario.foobar
-import cti_client.scenario.null
-import cti_client.scenario.standard
-import cti_client.strategy.prespawn
-import cti_client.strategy.spawn
-import cti_client.strategy.time
-from cti_client.client.cti import CTIClient
-from cti_client.runner import ScenarioRunner
-from cti_client.scenario.standard import StandardScenarioStatistics
+import xivo_client.client.step
+import xivo_client.scenario.foobar
+import xivo_client.scenario.null
+import xivo_client.scenario.standard
+import xivo_client.strategy.prespawn
+import xivo_client.strategy.spawn
+import xivo_client.strategy.time
+from xivo_client.client.cti import CTIClient
+from xivo_client.runner import ScenarioRunner
+from xivo_client.scenario.standard import StandardScenarioStatistics
 
 
 def main():
@@ -46,13 +61,13 @@ def _set_logging_level(verbosity):
 
 def _load_config_file(filename, config_args):
     config_globals = {}
-    config_globals.update(cti_client.scenario.foobar.__dict__)
-    config_globals.update(cti_client.scenario.null.__dict__)
-    config_globals.update(cti_client.scenario.standard.__dict__)
-    config_globals.update(cti_client.client.step.__dict__)
-    config_globals.update(cti_client.strategy.prespawn.__dict__)
-    config_globals.update(cti_client.strategy.spawn.__dict__)
-    config_globals.update(cti_client.strategy.time.__dict__)
+    config_globals.update(xivo_client.scenario.foobar.__dict__)
+    config_globals.update(xivo_client.scenario.null.__dict__)
+    config_globals.update(xivo_client.scenario.standard.__dict__)
+    config_globals.update(xivo_client.client.step.__dict__)
+    config_globals.update(xivo_client.strategy.prespawn.__dict__)
+    config_globals.update(xivo_client.strategy.spawn.__dict__)
+    config_globals.update(xivo_client.strategy.time.__dict__)
     config_globals['CTIClient'] = CTIClient
     config_globals['args'] = config_args
     execfile(filename, config_globals)

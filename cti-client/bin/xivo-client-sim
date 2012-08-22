@@ -1,5 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-from cti_client.bin.client import main
+from xivo_client.bin.simulator import main
 main()

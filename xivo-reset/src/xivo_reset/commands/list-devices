@@ -1,3 +1,0 @@
-#!/bin/sh
-
-curl -k "http://localhost/service/ipbx/json.php/private/pbx_settings/devices/?act=list"

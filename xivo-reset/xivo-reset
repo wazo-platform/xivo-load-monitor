@@ -1,5 +1,0 @@
-#!/bin/sh
-
-export PYTHONPATH="src:etc:$PYTHONPATH"
-
-python -m xivo_reset.bin.xivo_reset "$@"

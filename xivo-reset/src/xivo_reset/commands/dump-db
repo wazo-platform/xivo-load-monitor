@@ -1,6 +1,0 @@
-#!/bin/sh
-
-db="$1"
-filename="$2"
-
-su - -c "pg_dump -Fc $db" postgres > "$filename"

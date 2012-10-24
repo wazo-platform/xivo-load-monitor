@@ -1,5 +1,0 @@
-Scripts are made to be run directly on the target XiVO.
-
-To "install":
-
-    rsync -v -rtlp --exclude='.*' --exclude='/var/*' --delete . <hostname>:xivo-reset/

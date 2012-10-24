@@ -1,5 +1,0 @@
-#!/bin/sh
-
-filename="$1"
-
-su - -c "pg_restore -C -d postgres" postgres < "$filename"

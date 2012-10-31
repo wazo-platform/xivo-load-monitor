@@ -19,6 +19,7 @@
 import sys
 import argparse
 import ConfigParser
+import time
 from xivo_ws import XivoServer
 from xivo_ws import User
 from xivo_ws import UserLine
@@ -78,15 +79,17 @@ class ManageDataset(object):
 
         user_start_line = self._get_user_start_line(user_list)
         if user_start_line > self.users_first_line:
-            nb_user_to_create = user_start_line - self.users_first_line
+            nb_user_to_create = user_start_line - ( self.users_first_line + self.nb_users )
         else:
             nb_user_to_create = self.nb_users
         if nb_user_to_create > 0:
             self._add_users(user_start_line)
+            self._wait_for_commit()
 
         if self.nb_agents > 0:
             agent_start_id = self._get_agent_start_id(agent_list)
             self._add_agents(agent_start_id, user_list)
+            self._wait_for_commit()
             available_agents = self.nb_users
         else:
             available_agents = self.available_agents_cnf
@@ -119,7 +122,7 @@ class ManageDataset(object):
             return 0
 
     def _get_user_list(self):
-        return self.xs.user.list()
+        return self.xs.users.list()
 
     def _get_user_start_line(self, user_list):
         user_last_line = self._get_user_last_line(user_list)
@@ -130,7 +133,7 @@ class ManageDataset(object):
         return users_start_line
 
     def _get_agent_list(self):
-        return self.xs.agent.list()
+        return self.xs.agents.list()
 
     def _get_agent_start_id(self, agent_list):
         if len(agent_list) > 0:
@@ -141,11 +144,13 @@ class ManageDataset(object):
 
     def _add_users(self, user_start_line):
         print 'Add users ..'
+        users = []
         for offset in range(user_start_line, self.users_first_line + self.nb_users):
             user = User(firstname=u'User', lastname=u'' + str(offset))
             user.line = UserLine(context=u'default', number=offset)
-            self.xs.user.add(user)
-            print 'User %s added' % str(offset)
+            users.append(user)
+        print 'Import %d users...' % len(users)
+        self.xs.users.import_(users)
 
     def _add_agents(self, agent_start_id, user_list):
         user_id = sorted([user.id for user in user_list])[-self.nb_agents:]
@@ -158,7 +163,7 @@ class ManageDataset(object):
                           number=offset,
                           context=u'default',
                           users=[ user_id[offset - agent_start_id] ])
-            self.xs.agent.add(agent)
+            self.xs.agents.add(agent)
             print 'Agent %s number %s added on user %s' % (agent.lastname, offset, agent.users)
  
     def _get_agent_id(self, agent_list, available_agents):
@@ -168,7 +173,7 @@ class ManageDataset(object):
         return available_agents / ( self.nb_agent_by_queue - self.queue_member_overlap )
 
     def _get_queue_list(self):
-        return self.xs.queue.list()
+        return self.xs.queues.list()
 
     def _get_queue_start_nb(self, queue_list):
         if len(queue_list) > 0:
@@ -189,7 +194,7 @@ class ManageDataset(object):
                           autopause=False,
                           agents=agent_id[first_agent_index:first_agent_index + self.nb_agent_by_queue])
 
-            self.xs.queue.add(queue)
+            self.xs.queues.add(queue)
             print 'Queue %s number added with %s agents' % (offset, queue.agents)
  
     def _get_queue_list_nb_id(self, queue_list):
@@ -203,7 +208,10 @@ class ManageDataset(object):
             incall.context = 'from-extern'
             incall.destination = QueueDestination(queue_id)
             print 'Adding incall %s %s...' % (incall.number, incall.destination)
-            self.xs.incall.add(incall)
+            self.xs.incalls.add(incall)
+
+    def _wait_for_commit(self):
+        time.sleep(2)
 
 if __name__ == "__main__":
     main()

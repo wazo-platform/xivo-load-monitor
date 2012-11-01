@@ -95,7 +95,7 @@ class ManageDataset(object):
             available_agents = self.available_agents_cnf
 
         agent_id = self._get_agent_id(agent_list, available_agents)
-        nb_queue_add = self._get_nb_queue_add(available_agents)
+        nb_queue_add = self._get_nb_queue_add(available_agents, queue_list)
         queue_start_nb = self._get_queue_start_nb(queue_list)
 
         if ( nb_queue_add > ( queue_start_nb - self.queues_first_context )):
@@ -169,8 +169,8 @@ class ManageDataset(object):
     def _get_agent_id(self, agent_list, available_agents):
         return sorted([agent.id for agent in agent_list])[-available_agents:]
 
-    def _get_nb_queue_add(self, available_agents):
-        return available_agents / ( self.nb_agent_by_queue - self.queue_member_overlap )
+    def _get_nb_queue_add(self, available_agents, queue_list):
+        return ( available_agents / ( self.nb_agent_by_queue - self.queue_member_overlap ) - len(queue_list) )
 
     def _get_queue_list(self):
         return self.xs.queues.list()

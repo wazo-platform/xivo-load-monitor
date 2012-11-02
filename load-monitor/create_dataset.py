@@ -104,7 +104,9 @@ class ManageDataset(object):
         # Recall of _get_queue_list() once queues are created
         queue_list = self._get_queue_list()
         queue_list_nb_id = self._get_queue_list_nb_id(queue_list)
-        self._add_incall(queue_list_nb_id)
+        nb_incalls_add = self._get_nb_incalls_add(queue_list_nb_id)
+        if nb_incalls_add > 0:
+            self._add_incall(queue_list_nb_id, nb_incalls_add)
  
     def _initiate_connection(self):
         try:
@@ -154,6 +156,7 @@ class ManageDataset(object):
 
     def _add_agents(self, agent_start_id, user_list):
         user_id = sorted([user.id for user in user_list])[-self.nb_agents:]
+        print 'DEBUG : %s' % user_id
  
         print 'Add agents ..'
         for offset in range(agent_start_id, self.agents_first_id + self.nb_agents):
@@ -200,9 +203,16 @@ class ManageDataset(object):
     def _get_queue_list_nb_id(self, queue_list):
         return sorted((queue.number, queue.id) for queue in queue_list)
 
-    def _add_incall(self, queue_list_nb_id):
+    def _get_incall_list(self):
+        return self.xs.incalls.list()
+
+    def _get_nb_incalls_add(self, queue_list_nb_id):
+        return len(queue_list_nb_id) - len(self._get_incall_list())
+
+    def _add_incall(self, queue_list_nb_id, nb_incalls_add):
         print 'Add Incalls ..'
-        for queue_nb, queue_id in queue_list_nb_id:
+        # TODO : Boucle FOR qui commence au N ieme element donne par nb_incalls_add
+        for queue_nb, queue_id in queue_list_nb_id[-nb_incalls_add]:
             incall = Incall()
             incall.number = self.incalls_first_line + int(queue_nb) - self.queues_first_context
             incall.context = 'from-extern'

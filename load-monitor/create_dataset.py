@@ -213,7 +213,7 @@ class ManageDataset(object):
     def _add_incall(self, queue_list_nb_id, nb_incalls_add):
         print 'Add Incalls ..'
         # TODO : Boucle FOR qui commence au N ieme element donne par nb_incalls_add
-        for queue_nb, queue_id in queue_list_nb_id[-nb_incalls_add]:
+        for queue_nb, queue_id in queue_list_nb_id[-nb_incalls_add:]:
             incall = Incall()
             incall.number = self.incalls_first_line + int(queue_nb) - self.queues_first_context
             incall.context = 'from-extern'

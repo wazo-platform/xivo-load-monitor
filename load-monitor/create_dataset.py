@@ -156,18 +156,19 @@ class ManageDataset(object):
 
     def _add_agents(self, agent_start_id, user_list):
         user_id = sorted([user.id for user in user_list])[-self.nb_agents:]
-        print 'DEBUG : %s' % user_id
  
-        print 'Add agents ..'
-        for offset in range(agent_start_id, self.agents_first_id + self.nb_agents):
-            agent = Agent(firstname=u'Agent',
+        agent_end_id = self.agents_first_id + self.nb_agents
+        if agent_start_id < agent_end_id:
+            print 'Add agents ..'
+            for offset in range(agent_start_id, agent_end_id):
+                agent = Agent(firstname=u'Agent',
                           #lastname=str( agent_start_id - agents_first_id + offset ),
                           lastname=str(offset),
                           number=offset,
                           context=u'default',
                           users=[ user_id[offset - agent_start_id] ])
-            self.xs.agents.add(agent)
-            print 'Agent %s number %s added on user %s' % (agent.lastname, offset, agent.users)
+                self.xs.agents.add(agent)
+                print 'Agent %s number %s added on user %s' % (agent.lastname, offset, agent.users)
  
     def _get_agent_id(self, agent_list, available_agents):
         return sorted([agent.id for agent in agent_list])[-available_agents:]

@@ -57,8 +57,8 @@ class XivoAsteriskFreezeDetect(MuninPlugin):
 
     def execute(self):
 
-        host = '10.38.1.1'
-        account = '1051'
+        host = '127.0.0.1'
+        account = '1000'
 
         try:
             exit_status = self._sipsak_check(host, account)

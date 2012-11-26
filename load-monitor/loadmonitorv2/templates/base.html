@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html lang="fr">
+<head>
+    <title>LoadMonitor V2</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div id=header>
+        <h1>Load Monitor V2 - {{ server }}</h1>
+    </div>
+    <div id=status>
+        <table width=100%><tr><td width=50% align=left>
+            <b>Appels simultannés :: {{ simultaneous_calls }} &nbsp --- Appels passés :: {{ total_calls }}</b>
+        </td><td width=50% align=right>
+            Status : <b>{{ test_status }}</b>
+        </td></tr></table>
+    </div>
+    <div id=body>
+        <div id=menu>
+            <div id=selectserver>
+                <b>Server :</b><br />
+            </div>
+            <div id=actions>
+                <b>Actions :</b><br />
+                <br />&nbsp;
+            </div>
+        </div>
+        <div id=graphs>
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</body>
+</html>

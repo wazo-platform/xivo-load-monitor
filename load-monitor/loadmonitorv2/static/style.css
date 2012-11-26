@@ -1,0 +1,50 @@
+div#header {
+    color:black;
+    background-color:#ffefbd;
+    position:relative;
+    left:5%;
+    width:90%;
+    height:50px;
+    border-left-style: groove;
+    border-bottom-style: groove }
+
+div#status {
+    color:black;
+    background-color:white;
+    position:relative;
+    left:5%;
+    width:90%;
+    height:45px;
+    border-bottom-style: dotted }
+
+div#menu {
+    color:black;
+    background-color:#c3c3c3;
+    position:absolute;
+    width:10%;
+    height:100%;
+    border-right-style:dashed }
+
+div#selectserver {
+    color:black;
+    position:relative;
+    height:10%;
+    border-bottom-style:outset }
+
+div #actions {
+    color:black;
+    position:relative;
+    border-bottom-style:outset }
+
+div #graphs {
+    color:black;
+    background-color:white;
+    position:absolute;
+    left:11% }
+
+div #blue {
+    color:black;
+    background-color:#e9fffd;
+    position:absolute;
+    width:89%;
+    left:11% }

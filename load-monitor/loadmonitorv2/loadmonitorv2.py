@@ -51,6 +51,14 @@ class Loadmonitorv2Functions:
         
         return liste
 
+    def xivo_server_list(self):
+        sql = 'SELECT serveur.nom FROM serveur WHERE serveur.type = \'1\''
+        return self._execute_sql(sql)
+
+    def _id_from_name(self, name):
+        sql = 'SELECT serveur.id FROM serveur WHERE serveur.nom = \'%s\'' % (name)
+        return self._execute_sql(sql)
+
     def _complete_uri(self, uri, server_params):
         munin_ip = self._munin_ip(server_params[0])[0][0]
         name = server_params[1]
@@ -97,9 +105,9 @@ def show_server(server):
     # get list of graphs for 'server'
     lmv2 = Loadmonitorv2Functions()
     server_params = lmv2.server_params(server)[0]
-    graph_liste = lmv2.gen_page(server_params)
-    print(graph_liste)
-    return render_template('graphs.html', graphs=graph_liste, server=server)
+    graph_list = lmv2.gen_page(server_params)
+    xivo_server_list = lmv2.xivo_server_list()
+    return render_template('graphs.html', graphs=graph_list, server=server, server_list=xivo_server_list)
 
 if __name__ == "__main__":
     app.debug = True

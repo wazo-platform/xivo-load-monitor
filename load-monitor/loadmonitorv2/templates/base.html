@@ -19,6 +19,17 @@
         <div id=menu>
             <div id=selectserver>
                 <b>Server :</b><br />
+                <ul>
+                    {% for srv in server_list %}
+                        {% if srv[0] == server %}
+                            <b>
+                        {% endif %}
+                        <li><a href=http://load-monitor-2/ServerSelect/{{ srv[0] }}>{{ srv[0] }}</a></li>
+                        {% if srv[0] == server %}
+                            </b>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
             </div>
             <div id=actions>
                 <b>Actions :</b><br />

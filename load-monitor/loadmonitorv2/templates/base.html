@@ -18,7 +18,7 @@
     <div id=body>
         <div id=menu>
             <div id=selectserver>
-                <b>Server :</b><br />
+                <b>Servers :</b><br />
                 <ul>
                     {% for srv in server_list %}
                         {% if srv[0] == server %}
@@ -34,6 +34,7 @@
             <div id=actions>
                 <b>Actions :</b><br />
                 <br />&nbsp;
+                <a href="{{ url_for('add_server') }}">Add a server</a>
             </div>
         </div>
         <div id=graphs>

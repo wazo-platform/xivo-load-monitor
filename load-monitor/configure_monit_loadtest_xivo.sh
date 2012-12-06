@@ -11,6 +11,7 @@ python setup.py install
 pip install psutil
 cd /etc/munin/plugins/
 ln -s /usr/local/src/git/xivo-tools/load-monitor/munin-plugins/asterisk_calls_processed.py .
+ln -s /usr/local/src/git/xivo-tools/load-monitor/munin-plugins/asterisk_simultaneous_calls_average.py .
 ln -s /usr/local/src/git/xivo-tools/load-monitor/munin-plugins/pgsql_mem.py
 ln -s /usr/local/src/git/xivo-tools/load-monitor/munin-plugins/xivo_asterisk_file_descriptors
 ln -s /usr/local/src/git/xivo-tools/load-monitor/munin-plugins/xivo_asterisk_freeze_detect.py

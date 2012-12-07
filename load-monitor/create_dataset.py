@@ -23,6 +23,7 @@ import ConfigParser
 import time
 import subprocess
 import xivo_ws
+import math
 from lettuce.registry import world
 from xivo_ws import XivoServer
 from xivo_ws import User
@@ -86,7 +87,10 @@ class ManageDataset(object):
  
         self.incalls_first_line = config.getint(section, 'incalls_first_line')
 
-        self.contexts = config.get(section, 'contexts')
+        self.nb_user_in_default_context = config.getint(section, 'nb_user_in_default_context')
+        self.nb_user_in_other_context = config.getint(section, 'nb_user_in_other_context')
+
+        self.context_user_id = (0, 0)
 
         self._initiate_connection()
 
@@ -155,22 +159,20 @@ class ManageDataset(object):
             users_start_line = self.users_first_line
         return users_start_line
 
-    def _user_context(self, offset):
-        flag = 0
-        for context_cnf in self.contexts:
-            nb_group = context_cnf['nb_group']
-            users_per_group = context_cnf['users_per_group']
-            context = context_cnf['context'][0]
-            nb_users_in_this_context = nb_group * users_per_group
-            if offset >= flag and offset < nb_users_in_this_context:
-                if context == 'default':
-                    return context
-                else:
-                    #TODO
-                    context = ''
-                    return context
-            if ( offset + 1 ) == nb_users_in_this_context:
-                offset = nb_users_in_this_context
+    def _user_context(self, offset, user_start_line):
+        if ( offset - user_start_line ) < self.nb_user_in_default_context:
+            return u'default', offset
+        else:
+            old_context, old_position = self.context_user_id
+            id_context = int(math.ceil(( offset - user_start_line - self.nb_user_in_default_context + 0.001) / self.nb_user_in_other_context))
+            context = u'context' + str(id_context)
+            if old_context != id_context:
+                position = 0
+            else:
+                position = old_position + 1
+            self.context_user_id = (id_context, position)
+            line = user_start_line + ( id_context * 100 ) + position
+            return context, line
 
     def _agent_list(self):
         return self.xs.agents.list()
@@ -186,12 +188,15 @@ class ManageDataset(object):
         print 'Add users ..'
         users = []
         for offset in range(user_start_line, self.users_first_line + self.nb_users):
-            user = User(firstname=u'User', lastname=u'' + str(offset))
+            """
             try:
-                user_context = _user_context(offset)
+                user_context = self._user_context(offset)
             except:
                 user_context = u'default'
-            user.line = UserLine(context=user_context, number=offset)
+            """
+            user_context, line = self._user_context(offset, user_start_line)
+            user = User(firstname=u'User', lastname=u'' + str(offset - self.users_first_line))
+            user.line = UserLine(context=user_context, number=line)
             users.append(user)
         print 'Import %d users...' % len(users)
         self.xs.users.import_(users)

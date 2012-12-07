@@ -36,9 +36,8 @@ queues_first_context = 11000
 incalls_first_line = 1500
 
 # User context configuration
-# Les contextes doivent être écris dans leur ordre de création
-# 
-contexts = [{'nb_group': 2, 'users_per_group': 15, 'context': ['default']},
-            {'nb_group': 10, 'users_per_group': 2, 'context': ['default']},
-            {'nb_group': 25, 'users_per_group': 4, 'context': ['others', 2]},
-           ]
+
+# nb_user_in_default_context + ( nb_user_in_other_context * nb_contexts ) 
+# must be equal to nb_users
+nb_user_in_default_context = 98
+nb_user_in_other_context = 8

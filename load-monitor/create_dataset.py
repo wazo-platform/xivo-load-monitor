@@ -195,7 +195,7 @@ class ManageDataset(object):
                 user_context = u'default'
             """
             user_context, line = self._user_context(offset, user_start_line)
-            user = User(firstname=u'User', lastname=u'' + str(offset - self.users_first_line))
+            user = User(firstname=u'User', lastname=u'' + str(offset - self.users_first_line).zfill(4))
             user.line = UserLine(context=user_context, number=line)
             users.append(user)
         print 'Import %d users...' % len(users)

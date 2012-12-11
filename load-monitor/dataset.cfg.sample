@@ -11,10 +11,21 @@ secret = xivo-ws
 nb_trunks = 30
 # Number of contexts
 nb_contexts = 20
+# NB: entity must be xivo_entity
 # Number of users to add
+# No more than 1000 users
 nb_users = 250
 # First line number defined in the context
 users_first_line = 1100
+
+# User groups
+# default, user_grp = None
+# Only one type of group in other contexts than default
+user_grp = 2,15,default/10,2,default/25,4,other_context
+
+# First queue number defined on the context
+# No more than 100 groups allowed by context
+group_first_context = 21000
 
 # Number of agents to add
 nb_agents = 250
@@ -30,6 +41,7 @@ nb_agent_by_queue = 30
 # Number of agents in queue n and in queue n+1
 queue_member_overlap = 5
 # First queue number defined on the context
+# No more than 100 queues allowed by context
 queues_first_context = 11000
 
 # First incoming call number defined in context
@@ -41,3 +53,7 @@ incalls_first_line = 1500
 # must be equal to nb_users
 nb_user_in_default_context = 98
 nb_user_in_other_context = 8
+
+# Debug or not
+debug = True
+debug_lvl = 1

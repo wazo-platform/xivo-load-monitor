@@ -30,6 +30,7 @@ from xivo_ws import User
 from xivo_ws import UserLine
 from xivo_ws import Agent
 from xivo_ws import Queue
+from xivo_ws import Group
 from xivo_ws import Incall
 from xivo_ws import QueueDestination
 from xivo_lettuce import terrain
@@ -47,7 +48,7 @@ def main():
         sys.exit(1)
 
     dataset = ManageDatasetWs(section)
-    dataset.prepare()
+    #dataset.prepare()
     dataset.create_dataset()
 
 def _parse_args():
@@ -90,7 +91,12 @@ class ManageDataset(object):
         self.nb_user_in_default_context = config.getint(section, 'nb_user_in_default_context')
         self.nb_user_in_other_context = config.getint(section, 'nb_user_in_other_context')
 
+        self.user_grp = config.get(section, 'user_grp')
         self.context_user_id = (0, 0)
+        self.group_first_context = config.getint(section, 'group_first_context')
+        
+        self.debug = config.getboolean(section, 'debug')
+        self.debug_lvl = config.getint(section, 'debug_lvl')
 
         self._initiate_connection()
 
@@ -100,6 +106,7 @@ class ManageDataset(object):
         queue_list = self._queue_list()
 
         user_start_line = self._user_start_line(user_list)
+        if self.debug: print('DEBUG: user_start_line : %s' % user_start_line)
         if user_start_line > self.users_first_line:
             nb_user_to_create = user_start_line - ( self.users_first_line + self.nb_users )
         else:
@@ -153,7 +160,8 @@ class ManageDataset(object):
 
     def _user_start_line(self, user_list):
         user_last_line = self._user_last_line(user_list)
-        if len(user_list) > 0 and user_last_line != 0:
+        if self.debug: print('DEBUG, user_last_line : %s' % user_last_line)
+        if len(user_list) > 0 and user_last_line != 0 and user_last_line > 1000:
             users_start_line = ( 1 + user_last_line )
         else:
             users_start_line = self.users_first_line
@@ -172,7 +180,21 @@ class ManageDataset(object):
                 position = old_position + 1
             self.context_user_id = (id_context, position)
             line = user_start_line + ( id_context * 100 ) + position
-            return context, line
+            return u'%s' % context, u'%s' % line
+
+    """
+    def _user_id_by_lastname(self, name, user_group_list):
+        if self.debug and self.debug_lvl == 2: print('DEBUG: user_group_list: %s' % user_group_list)
+        for user in user_group_list:
+            if self.debug: print('DEBUG: user.line: %s' % user.line)
+            if user.lastname == name:
+                if self.debug: print('DEBUG: Occurence found for %s' % user.lastname)
+                if self.debug: print('DEBUG: User ID %s' % user.id)
+                return user.id
+            else:
+                if self.debug and self.debug_lvl == 2: print('DEBUG: Occurence not found for %s' % user.lastname)
+                if self.debug: print('DEBUG: LASTNAME is %s' % name)
+    """
 
     def _agent_list(self):
         return self.xs.agents.list()
@@ -188,17 +210,13 @@ class ManageDataset(object):
         print 'Add users ..'
         users = []
         for offset in range(user_start_line, self.users_first_line + self.nb_users):
-            """
-            try:
-                user_context = self._user_context(offset)
-            except:
-                user_context = u'default'
-            """
             user_context, line = self._user_context(offset, user_start_line)
-            user = User(firstname=u'User', lastname=u'' + str(offset - self.users_first_line).zfill(4))
+            user_lastname = u'%s' % (str(offset - self.users_first_line).zfill(4))
+            user = User(firstname=u'User', lastname=user_lastname)
             user.line = UserLine(context=user_context, number=line)
             users.append(user)
-        print 'Import %d users...' % len(users)
+            if self.debug: print('DEBUG: User %s with line %s to context %s, for a total of %s users' % (user_lastname, line, user_context, self.nb_users))
+        print('Import %d users...' % len(users))
         self.xs.users.import_(users)
 
     def _add_agents(self, agent_start_id, user_list):
@@ -289,22 +307,34 @@ class ManageDatasetWs(ManageDataset):
     def prepare(self):
         try:
             self._prepare_context()
+            #print('DEBUG, CONTEXT SKIPPED')
         except:
             print('Skipping, contexts already has a configuration ..')
         try:
             self._prepare_trunk()
+            #print('DEBUG, TRUNK SKIPPED')
         except:
             print('Skipping, trunks already has a configuration ..')
+        if self.user_grp != 'None':
+            self._add_group_to_specific_context()
 
     def _prepare_context(self):
         print 'Configuring Context..'
-        context_manager_ws.update_contextnumbers_user('default', 1000, 1099)
+        context_manager_ws.update_contextnumbers_user('default', self.users_first_line, self.users_first_line + 99)
+        context_manager_ws.update_contextnumbers_group('default', self.group_first_context, self.group_first_context + 99)
+        context_manager_ws.update_contextnumbers_queue('default', self.queues_first_context, self.queues_first_context + 99)
         for i in range(1, self.nb_contexts + 1):
             name = 'context%s' % (i)
-            range_start = 1000 + ( 100 * i )
-            range_end = range_start + 99
+            user_range_start = self.users_first_line + ( 100 * i )
+            user_range_end = user_range_start + 99
+            group_range_start = self.group_first_context + ( 100 * i )
+            group_range_end = group_range_start + 99
+            queue_range_start = self.queues_first_context + ( 100 * i )
+            queue_range_end = queue_range_start + 99
             context_manager_ws.add_context(name, name, 'internal')
-            context_manager_ws.update_contextnumbers_user(name, range_start, range_end)
+            context_manager_ws.update_contextnumbers_user(name, user_range_start, user_range_end)
+            context_manager_ws.update_contextnumbers_group(name, group_range_start, group_range_end)
+            context_manager_ws.update_contextnumbers_queue(name, queue_range_start, queue_range_end)
         context_manager_ws.update_contextnumbers_incall('from-extern', 1000, 2000, 4)
 
     def _prepare_trunk(self):
@@ -319,6 +349,42 @@ class ManageDatasetWs(ManageDataset):
             else:
                 context = 'context%s' % (i - n)
             trunksip_manager_ws.add_or_replace_trunksip(world.xivo_host, trunk, context, 'user')
+
+    def _add_group_to_specific_context(self):
+        flag_first_user = 0
+        general_group_number = 0
+        for group in self.user_grp.split('/'):
+            nb_groups = int(group.split(',')[0])
+            nb_user_by_grp = int(group.split(',')[1])
+            context = group.split(',')[2]
+            for group_number in range(0, nb_groups):
+                group_name_number = general_group_number + self.group_first_context
+                if context != 'default':
+                    nb_grp_by_context = self._find_nb_grp_by_context(nb_user_by_grp)
+                    if self.debug and self.debug_lvl == 2: print('DEBUG: group_number: %s, nb_grp_by_context: %s' % (group_number, nb_grp_by_context))
+                    id_context = (int(math.ceil(group_number / nb_grp_by_context) +1 ))
+                    context = u'context%s' % id_context
+                    group_name_number = self.group_first_context + ( id_context * 100 ) + id_context
+                self._add_group(group_name_number, context)
+                flag_first_user += nb_user_by_grp
+                general_group_number += 1
+
+    def _add_group(self, grp_number, context):
+        print('Add group %s in context %s' % (grp_number, context))
+        group = Group(name=u'Group%s' % (str(grp_number).zfill(4)),
+                      number=grp_number,
+                      context=context,
+                      user_ids=[])
+
+        if self.debug: print('DEBUG: groupname: %s, number: %s, context: %s' % (str(grp_number).zfill(4), grp_number, context))
+        self.xs.group.add(group)
+        if self.debug and self.debug_lvl == 2: print('Group %s added' % (grp_number))
+
+    def _find_nb_grp_by_context(self, nb_user_by_grp):
+        # Assuming that :
+        # - if we are in this method, it's because we're not talking about default context
+        if self.debug and self.debug_lvl == 2: print('DEBUG: nb_user_by_grp: %s' % nb_user_by_grp)
+        return int(round(self.nb_user_in_other_context / nb_user_by_grp))
 
     def _init_webservices(self):
         ws_sql_file = os.path.join(_ROOT_DIR, 'utils', 'webservices.sql')

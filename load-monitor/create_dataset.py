@@ -48,7 +48,7 @@ def main():
         sys.exit(1)
 
     dataset = ManageDatasetWs(section)
-    #dataset.prepare()
+    dataset.prepare()
     dataset.create_dataset()
 
 def _parse_args():
@@ -181,20 +181,6 @@ class ManageDataset(object):
             self.context_user_id = (id_context, position)
             line = user_start_line + ( id_context * 100 ) + position
             return u'%s' % context, u'%s' % line
-
-    """
-    def _user_id_by_lastname(self, name, user_group_list):
-        if self.debug and self.debug_lvl == 2: print('DEBUG: user_group_list: %s' % user_group_list)
-        for user in user_group_list:
-            if self.debug: print('DEBUG: user.line: %s' % user.line)
-            if user.lastname == name:
-                if self.debug: print('DEBUG: Occurence found for %s' % user.lastname)
-                if self.debug: print('DEBUG: User ID %s' % user.id)
-                return user.id
-            else:
-                if self.debug and self.debug_lvl == 2: print('DEBUG: Occurence not found for %s' % user.lastname)
-                if self.debug: print('DEBUG: LASTNAME is %s' % name)
-    """
 
     def _agent_list(self):
         return self.xs.agents.list()
@@ -351,34 +337,37 @@ class ManageDatasetWs(ManageDataset):
             trunksip_manager_ws.add_or_replace_trunksip(world.xivo_host, trunk, context, 'user')
 
     def _add_group_to_specific_context(self):
-        flag_first_user = 0
+        flag = 0
         general_group_number = 0
         for group in self.user_grp.split('/'):
             nb_groups = int(group.split(',')[0])
             nb_user_by_grp = int(group.split(',')[1])
             context = group.split(',')[2]
             for group_number in range(0, nb_groups):
-                group_name_number = general_group_number + self.group_first_context
+                group_line_number = general_group_number + self.group_first_context
+                group_name_number = str(general_group_number).zfill(4)
                 if context != 'default':
                     nb_grp_by_context = self._find_nb_grp_by_context(nb_user_by_grp)
                     if self.debug and self.debug_lvl == 2: print('DEBUG: group_number: %s, nb_grp_by_context: %s' % (group_number, nb_grp_by_context))
                     id_context = (int(math.ceil(group_number / nb_grp_by_context) +1 ))
                     context = u'context%s' % id_context
-                    group_name_number = self.group_first_context + ( id_context * 100 ) + id_context
-                self._add_group(group_name_number, context)
-                flag_first_user += nb_user_by_grp
+                    group_line_number = self.group_first_context + ( id_context * 100 ) + flag
+                    if flag < ( nb_grp_by_context - 1 ):
+                        flag += 1
+                    else:
+                        flag = 0
+                self._add_group(group_name_number, group_line_number, context)
                 general_group_number += 1
 
-    def _add_group(self, grp_number, context):
-        print('Add group %s in context %s' % (grp_number, context))
-        group = Group(name=u'Group%s' % (str(grp_number).zfill(4)),
-                      number=grp_number,
+    def _add_group(self, grp_name_nb, grp_line, context):
+        print('Add group %s number %s in context %s' % (grp_name_nb, grp_line, context))
+        group = Group(name=u'Group%s' % grp_name_nb,
+                      number=grp_line,
                       context=context,
                       user_ids=[])
 
-        if self.debug: print('DEBUG: groupname: %s, number: %s, context: %s' % (str(grp_number).zfill(4), grp_number, context))
         self.xs.group.add(group)
-        if self.debug and self.debug_lvl == 2: print('Group %s added' % (grp_number))
+        if self.debug and self.debug_lvl == 2: print('Group %s added' % (grp_name_nb))
 
     def _find_nb_grp_by_context(self, nb_user_by_grp):
         # Assuming that :

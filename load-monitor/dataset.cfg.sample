@@ -14,6 +14,7 @@ nb_contexts = 20
 # NB: entity must be xivo_entity
 # Number of users to add
 # No more than 1000 users
+# No more than 100 users / context if multiple contexts
 nb_users = 250
 # First line number defined in the context
 users_first_line = 1100
@@ -21,7 +22,8 @@ users_first_line = 1100
 # User groups
 # default, user_grp = None
 # Only one type of group in other contexts than default
-user_grp = 2,15,default/10,2,default/25,4,other_context
+# Example: user_grp = 2,15,default/10,2,default/25,4,other_context
+user_grp = None
 
 # First queue number defined on the context
 # No more than 100 groups allowed by context
@@ -32,10 +34,6 @@ nb_agents = 250
 # First agent number to use
 agents_first_id = 9000
 
-# Number of agents to add, was used to add agents even if no
-# users were created ( association to previously created users)
-# Not relevant anymore
-available_agents_cnf = 250
 # Number of agents in a queue
 nb_agent_by_queue = 30
 # Number of agents in queue n and in queue n+1
@@ -55,5 +53,5 @@ nb_user_in_default_context = 98
 nb_user_in_other_context = 8
 
 # Debug or not
-debug = True
+debug = False
 debug_lvl = 1

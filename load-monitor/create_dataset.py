@@ -81,7 +81,6 @@ class ManageDataset(object):
         self.nb_agents = config.getint(section, 'nb_agents')
         self.agents_first_id = config.getint(section, 'agents_first_id')
  
-        self.available_agents_cnf = config.getint(section, 'available_agents_cnf')
         self.nb_agent_by_queue = config.getint(section, 'nb_agent_by_queue')
         self.queue_member_overlap = config.getint(section, 'queue_member_overlap')
         self.queues_first_context = config.getint(section, 'queues_first_context')
@@ -105,23 +104,27 @@ class ManageDataset(object):
         agent_list = self._agent_list()
         queue_list = self._queue_list()
 
-        user_start_line = self._user_start_line(user_list)
-        if self.debug: print('DEBUG: user_start_line : %s' % user_start_line)
-        if user_start_line > self.users_first_line:
-            nb_user_to_create = user_start_line - ( self.users_first_line + self.nb_users )
+        user_start_lastname = self._user_start_lastname(user_list)
+        if self.debug: print('DEBUG: user_start_lastname : %s' % user_start_lastname)
+        if ( user_start_lastname + self.users_first_line ) > self.users_first_line:
+            nb_user_to_create = user_start_lastname - self.nb_users
         else:
             nb_user_to_create = self.nb_users
         if nb_user_to_create > 0:
-            self._add_users(user_start_line)
+            self._add_users(user_start_lastname)
             self._wait_for_commit()
 
         if self.nb_agents > 0:
             agent_start_id = self._agent_start_id(agent_list)
-            self._add_agents(agent_start_id, user_list)
+            try:
+                self._add_agents(agent_start_id, user_list)
+            except IndexError:
+                print('No live reload on XiVO ? Try to re-run the script :)')
+                sys.exit(1)
             self._wait_for_commit()
-            available_agents = self.nb_users
+            available_agents = self.nb_agents
         else:
-            available_agents = self.available_agents_cnf
+            available_agents = 0
 
         agent_id = self._agent_id(agent_list, available_agents)
         try:
@@ -147,7 +150,7 @@ class ManageDataset(object):
             print '[Error] - No connection to XiVO'
             sys.exit(1)
 
-    def _user_last_line(self, user_list):
+    def _user_last_lastname(self, user_list):
         try:
             last_id = max([int(user.lastname) for user in user_list if user.lastname != ''])
             return last_id
@@ -158,28 +161,28 @@ class ManageDataset(object):
     def _user_list(self):
         return self.xs.users.list()
 
-    def _user_start_line(self, user_list):
-        user_last_line = self._user_last_line(user_list)
-        if self.debug: print('DEBUG, user_last_line : %s' % user_last_line)
-        if len(user_list) > 0 and user_last_line != 0 and user_last_line > 1000:
-            users_start_line = ( 1 + user_last_line )
+    def _user_start_lastname(self, user_list):
+        user_last_lastname = self._user_last_lastname(user_list)
+        if self.debug: print('DEBUG, user_last_lastname : %s' % user_last_lastname)
+        if len(user_list) > 0 and user_last_lastname != 0:
+            users_start_lastname = ( 1 + user_last_lastname )
         else:
-            users_start_line = self.users_first_line
-        return users_start_line
+            users_start_lastname = 0
+        return users_start_lastname
 
-    def _user_context(self, offset, user_start_line):
-        if ( offset - user_start_line ) < self.nb_user_in_default_context:
-            return u'default', offset
+    def _user_context(self, offset, user_start_lastname):
+        if ( offset - user_start_lastname ) < self.nb_user_in_default_context or self.nb_user_in_other_context == 0:
+            return u'default', offset + self.users_first_line
         else:
             old_context, old_position = self.context_user_id
-            id_context = int(math.ceil(( offset - user_start_line - self.nb_user_in_default_context + 0.001) / self.nb_user_in_other_context))
+            id_context = int(math.ceil(( offset - user_start_lastname - self.nb_user_in_default_context + 0.001) / self.nb_user_in_other_context))
             context = u'context' + str(id_context)
             if old_context != id_context:
                 position = 0
             else:
                 position = old_position + 1
             self.context_user_id = (id_context, position)
-            line = user_start_line + ( id_context * 100 ) + position
+            line = user_start_lastname + ( id_context * 100 ) + position + self.users_first_line
             return u'%s' % context, u'%s' % line
 
     def _agent_list(self):
@@ -192,12 +195,12 @@ class ManageDataset(object):
             agent_start_id = self.agents_first_id
         return agent_start_id
 
-    def _add_users(self, user_start_line):
+    def _add_users(self, user_start_lastname):
         print 'Add users ..'
         users = []
-        for offset in range(user_start_line, self.users_first_line + self.nb_users):
-            user_context, line = self._user_context(offset, user_start_line)
-            user_lastname = u'%s' % (str(offset - self.users_first_line).zfill(4))
+        for offset in range(user_start_lastname, self.nb_users):
+            user_context, line = self._user_context(offset, user_start_lastname)
+            user_lastname = u'%s' % (str(offset).zfill(4))
             user = User(firstname=u'User', lastname=user_lastname)
             user.line = UserLine(context=user_context, number=line)
             users.append(user)
@@ -212,6 +215,7 @@ class ManageDataset(object):
         if agent_start_id < agent_end_id:
             print 'Add agents ..'
             for offset in range(agent_start_id, agent_end_id):
+                if self.debug: print('agent_start_id: %s, agent_end_id: %s, offset: %s' % (agent_start_id, agent_end_id, offset))
                 agent = Agent(firstname=u'Agent',
                           #lastname=str( agent_start_id - agents_first_id + offset ),
                           lastname=str(offset),
@@ -240,6 +244,7 @@ class ManageDataset(object):
     def _add_queues(self, nb_queues_add, queue_start_nb, agent_id):
         for offset in range(queue_start_nb, queue_start_nb + nb_queues_add):
             first_agent_index = ( offset - self.queues_first_context ) * ( self.nb_agent_by_queue - self.queue_member_overlap ) 
+            if self.debug: print('first_agent_index: %s' % first_agent_index)
             print 'Add queue..'
             queue = Queue(name=u'queue%s' % offset,
                           display_name=u'Queue %s' % offset,
@@ -249,7 +254,11 @@ class ManageDataset(object):
                           autopause=False,
                           agents=agent_id[first_agent_index:first_agent_index + self.nb_agent_by_queue])
 
-            self.xs.queues.add(queue)
+            if len(queue.agents) > 0:
+                self.xs.queues.add(queue)
+            else:
+                print('No agents to add to the queue, perhaps no live reload so just re-run the script')
+                sys.exit(1)
             print 'Queue %s number added with %s agents' % (offset, queue.agents)
  
     def _queue_list_nb_id(self, queue_list):
@@ -273,7 +282,11 @@ class ManageDataset(object):
             self.xs.incalls.add(incall)
 
     def _wait_for_commit(self):
-        time.sleep(2)
+        print('Waiting for commit ...')
+        i = 2
+        for t in range(0, i):
+            print('%s...' % (i - t))
+            time.sleep(1)
 
 class ManageDatasetWs(ManageDataset):
     def __init__(self, section):
@@ -306,7 +319,11 @@ class ManageDatasetWs(ManageDataset):
 
     def _prepare_context(self):
         print 'Configuring Context..'
-        context_manager_ws.update_contextnumbers_user('default', self.users_first_line, self.users_first_line + 99)
+        if self.nb_user_in_other_context == 0:
+            default_plus_range_end = 999
+        else:
+            default_plus_range_end = 99
+        context_manager_ws.update_contextnumbers_user('default', self.users_first_line, self.users_first_line + default_plus_range_end)
         context_manager_ws.update_contextnumbers_group('default', self.group_first_context, self.group_first_context + 99)
         context_manager_ws.update_contextnumbers_queue('default', self.queues_first_context, self.queues_first_context + 99)
         for i in range(1, self.nb_contexts + 1):

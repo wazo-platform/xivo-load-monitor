@@ -26,10 +26,10 @@ app = Flask(__name__)
 
 class Loadmonitorv2Functions:
     def __init__(self):
-        pg_host = '10.38.1.252'
-        pg_username = 'loadmonitorv2'
-        pg_password = 'loadmonitorv2'
-        pg_db = 'loadmonitorv2'
+        pg_host = conf.pg_host
+        pg_username = conf.pg_username
+        pg_password = conf.pg_passord
+        pg_db = conf.pg_db
         conn_string = 'host=%s dbname=%s user=%s password=%s' % (pg_host, pg_db, pg_username, pg_password)
         self.conn = psycopg2.connect(conn_string)
 

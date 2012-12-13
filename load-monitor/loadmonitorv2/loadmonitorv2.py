@@ -179,16 +179,23 @@ def hello():
     lmv2 = Loadmonitorv2Functions(conf)
     xivo_list = lmv2.xivo_list()
     lmv2.close_conn()
-    server = xivo_list[0][1]
+    if xivo_list:
+        server = xivo_list[0][1]
+    else:
+        server = 'None'
     return redirect(url_for('show_server', server=server))
 
 @app.route('/ServerSelect/<server>')
 def show_server(server):
     # get list of graphs for 'server'
-    lmv2 = Loadmonitorv2Functions(conf)
-    server_params = lmv2.server_params(server)[0]
-    graph_list = lmv2.gen_page(server_params)
-    xivo_server_list = lmv2.xivo_server_list()
+    if server != 'None':
+        lmv2 = Loadmonitorv2Functions(conf)
+        server_params = lmv2.server_params(server)[0]
+        graph_list = lmv2.gen_page(server_params)
+        xivo_server_list = lmv2.xivo_server_list()
+    else:
+        graph_list=[]
+        xivo_server_list=[]
     return render_template('graphs.html', graphs=graph_list, server=server, server_list=xivo_server_list)
 
 @app.route('/AddServer/', methods=('GET', 'POST'))

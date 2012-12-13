@@ -13,7 +13,7 @@ SET escape_string_warning = off;
 -- Name: loadmonitorv2; Type: DATABASE; Schema: -; Owner: loadmonitorv2
 --
 
-CREATE DATABASE loadmonitorv2 WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'en_CA.UTF-8' LC_CTYPE = 'en_CA.UTF-8';
+CREATE DATABASE loadmonitorv2 WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
 
 
 ALTER DATABASE loadmonitorv2 OWNER TO loadmonitorv2;
@@ -68,6 +68,13 @@ ALTER SEQUENCE log_data_id_seq OWNED BY log_data.id;
 
 
 --
+-- Name: log_data_id_seq; Type: SEQUENCE SET; Schema: public; Owner: loadmonitorv2
+--
+
+SELECT pg_catalog.setval('log_data_id_seq', 1, false);
+
+
+--
 -- Name: log_info; Type: TABLE; Schema: public; Owner: loadmonitorv2; Tablespace: 
 --
 
@@ -101,6 +108,13 @@ ALTER TABLE public.log_info_id_seq OWNER TO loadmonitorv2;
 --
 
 ALTER SEQUENCE log_info_id_seq OWNED BY log_info.id;
+
+
+--
+-- Name: log_info_id_seq; Type: SEQUENCE SET; Schema: public; Owner: loadmonitorv2
+--
+
+SELECT pg_catalog.setval('log_info_id_seq', 1, false);
 
 
 --
@@ -140,6 +154,13 @@ ALTER SEQUENCE serveur_id_seq OWNED BY serveur.id;
 
 
 --
+-- Name: serveur_id_seq; Type: SEQUENCE SET; Schema: public; Owner: loadmonitorv2
+--
+
+SELECT pg_catalog.setval('serveur_id_seq', 6, true);
+
+
+--
 -- Name: serveur_type; Type: TABLE; Schema: public; Owner: loadmonitorv2; Tablespace: 
 --
 
@@ -170,6 +191,13 @@ ALTER TABLE public.serveur_type_id_seq OWNER TO loadmonitorv2;
 --
 
 ALTER SEQUENCE serveur_type_id_seq OWNED BY serveur_type.id;
+
+
+--
+-- Name: serveur_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: loadmonitorv2
+--
+
+SELECT pg_catalog.setval('serveur_type_id_seq', 5, true);
 
 
 --
@@ -223,6 +251,13 @@ ALTER SEQUENCE services_by_serveur_id_seq OWNED BY services_by_serveur.id;
 
 
 --
+-- Name: services_by_serveur_id_seq; Type: SEQUENCE SET; Schema: public; Owner: loadmonitorv2
+--
+
+SELECT pg_catalog.setval('services_by_serveur_id_seq', 2, true);
+
+
+--
 -- Name: services_id_seq; Type: SEQUENCE; Schema: public; Owner: loadmonitorv2
 --
 
@@ -241,6 +276,13 @@ ALTER TABLE public.services_id_seq OWNER TO loadmonitorv2;
 --
 
 ALTER SEQUENCE services_id_seq OWNED BY services.id;
+
+
+--
+-- Name: services_id_seq; Type: SEQUENCE SET; Schema: public; Owner: loadmonitorv2
+--
+
+SELECT pg_catalog.setval('services_id_seq', 9, true);
 
 
 --
@@ -275,6 +317,13 @@ ALTER TABLE public.watched_id_seq OWNER TO loadmonitorv2;
 --
 
 ALTER SEQUENCE watched_id_seq OWNED BY watched.id;
+
+
+--
+-- Name: watched_id_seq; Type: SEQUENCE SET; Schema: public; Owner: loadmonitorv2
+--
+
+SELECT pg_catalog.setval('watched_id_seq', 1, true);
 
 
 --
@@ -324,6 +373,51 @@ ALTER TABLE ONLY services_by_serveur ALTER COLUMN id SET DEFAULT nextval('servic
 --
 
 ALTER TABLE ONLY watched ALTER COLUMN id SET DEFAULT nextval('watched_id_seq'::regclass);
+
+
+--
+-- Data for Name: log_data; Type: TABLE DATA; Schema: public; Owner: loadmonitorv2
+--
+
+
+
+--
+-- Data for Name: log_info; Type: TABLE DATA; Schema: public; Owner: loadmonitorv2
+--
+
+
+
+--
+-- Data for Name: serveur; Type: TABLE DATA; Schema: public; Owner: loadmonitorv2
+--
+
+INSERT INTO serveur (id, nom, ip, domain, type) VALUES (1, 'loadmonitorv2', '10.38.1.252', 'steven.lan-quebec.avencall.com', 5);
+
+
+--
+-- Data for Name: serveur_type; Type: TABLE DATA; Schema: public; Owner: loadmonitorv2
+--
+
+INSERT INTO serveur_type (id, type) VALUES (1, 'XiVO');
+INSERT INTO serveur_type (id, type) VALUES (2, 'munin');
+INSERT INTO serveur_type (id, type) VALUES (3, 'loadmonitor');
+INSERT INTO serveur_type (id, type) VALUES (4, 'loadtester');
+INSERT INTO serveur_type (id, type) VALUES (5, 'all_but_xivo');
+
+
+--
+-- Data for Name: services; Type: TABLE DATA; Schema: public; Owner: loadmonitorv2
+--
+
+INSERT INTO services (id, service, uri, alt, width, height) VALUES (3, 'Asterisk file descriptors', 'xivo_asterisk_file_descriptors-day.png', 'Asterisk file descriptors', 497, 280);
+INSERT INTO services (id, service, uri, alt, width, height) VALUES (4, 'XiVO CTID socket', 'xivo_ctid_socket_py-day.png', 'XIVO CTID Socket', 497, 280);
+INSERT INTO services (id, service, uri, alt, width, height) VALUES (5, 'XiVO CTID memory', 'xivo_ctid_mem_py-day.png', 'XIVO CTID Memory', 497, 280);
+INSERT INTO services (id, service, uri, alt, width, height) VALUES (6, 'XiVO Asterisk memory', 'xivo_asterisk_mem_py-day.png', 'XIVO Asterisk Memory', 497, 280);
+INSERT INTO services (id, service, uri, alt, width, height) VALUES (7, 'XiVO PostgreSQL memory', 'pgsql_mem_py-day.png', 'XIVO PostgreSQL Memory', 497, 292);
+INSERT INTO services (id, service, uri, alt, width, height) VALUES (8, 'General memory usage', 'memory-day.png', 'Memory Usage', 497, 424);
+INSERT INTO services (id, service, uri, alt, width, height) VALUES (9, 'Load average', 'load-day.png', 'Load Average', 497, 280);
+INSERT INTO services (id, service, uri, alt, width, height) VALUES (1, 'Nb appels simultanes', '', NULL, NULL, NULL);
+INSERT INTO services (id, service, uri, alt, width, height) VALUES (2, 'Nb appels passes', '', NULL, NULL, NULL);
 
 
 --

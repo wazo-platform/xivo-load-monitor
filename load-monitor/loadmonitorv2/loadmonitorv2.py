@@ -31,7 +31,7 @@ class Loadmonitorv2Functions:
     def __init__(self):
         pg_host = conf.pg_host
         pg_username = conf.pg_username
-        pg_password = conf.pg_passord
+        pg_password = conf.pg_password
         pg_db = conf.pg_db
         conn_string = 'host=%s dbname=%s user=%s password=%s' % (pg_host, pg_db, pg_username, pg_password)
         self.conn = psycopg2.connect(conn_string)

@@ -20,6 +20,9 @@ from flask.ext.wtf import Form, TextField, SelectField, SelectMultipleField, Req
 import psycopg2
 import sys
 import re
+local_path = '/var/www/load-monitor-v2/'
+if local_path not in sys.path:
+    sys.path.append(local_path + 'www/')
 import conf
 
 app = Flask(__name__)

@@ -18,17 +18,14 @@
 from flask import Flask, redirect, url_for, render_template, request, flash
 from flask.ext.wtf import Form, TextField, SelectField, SelectMultipleField, Required, validators
 import psycopg2
-import sys
 import re
-local_path = '/var/www/load-monitor-v2/'
-if local_path not in sys.path:
-    sys.path.append(local_path + 'www/')
+import sys
 import conf
 
 app = Flask(__name__)
 
 class Loadmonitorv2Functions:
-    def __init__(self):
+    def __init__(self, conf):
         pg_host = conf.pg_host
         pg_username = conf.pg_username
         pg_password = conf.pg_password
@@ -124,7 +121,6 @@ class Loadmonitorv2Functions:
         name = server_params[1]
         domain = server_params[3]
         complete_uri = 'http://' + munin_ip + '/munin/' + domain + '/' + name + '.' + domain + '/' + uri
-        print complete_uri
         return complete_uri
 
     def _list_services(self, server_params):
@@ -163,12 +159,10 @@ class Loadmonitorv2Functions:
         return [ (str(x[0]), x[1]) for x in data]
 
 class AddServerForm(Form):
-    lmv2 = Loadmonitorv2Functions()
+    lmv2 = Loadmonitorv2Functions(conf)
     types_choices = lmv2._strize(lmv2.server_types_choices())
     munin_choices = lmv2._strize(lmv2.munin_servers())
     services_choices = lmv2._strize(lmv2.service_list())
-    print(munin_choices)
-    print(types_choices)
 
     name = TextField('nom', [validators.Required()])
     ip = TextField('ip', [validators.Required()])
@@ -182,7 +176,7 @@ class AddServerForm(Form):
 
 @app.route('/')
 def hello():
-    lmv2 = Loadmonitorv2Functions()
+    lmv2 = Loadmonitorv2Functions(conf)
     xivo_list = lmv2.xivo_list()
     lmv2.close_conn()
     server = xivo_list[0][1]
@@ -191,7 +185,7 @@ def hello():
 @app.route('/ServerSelect/<server>')
 def show_server(server):
     # get list of graphs for 'server'
-    lmv2 = Loadmonitorv2Functions()
+    lmv2 = Loadmonitorv2Functions(conf)
     server_params = lmv2.server_params(server)[0]
     graph_list = lmv2.gen_page(server_params)
     xivo_server_list = lmv2.xivo_server_list()
@@ -211,7 +205,7 @@ def add_server():
         print('########################################')
         print(new_server)
         print('########################################')
-        lmv2 = Loadmonitorv2Functions()
+        lmv2 = Loadmonitorv2Functions(conf)
         lmv2.add_server(new_server)
         return redirect(url_for('hello'))
     else:

@@ -51,7 +51,7 @@ def get_data(tn, command):
 
 def process_data(data):
     last_line = data.split('\n')[-1]
-    results = last_line.split(' ')[0]
+    results = int(last_line.split(' ')[0])/2
     return results
 
 def close_connection(tn):

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "_formhelpers.html" import render_field %}
+{% block content %}
+    <h2>Add a server</h2>
+    <form method=post action="/AddServer/">
+      <dl>
+        {{ render_field(form.name) }}
+        {{ render_field(form.ip) }}
+        {{ render_field(form.domain) }}
+        {{ render_field(form.server_type) }}
+        {{ render_field(form.watcher) }}
+        {{ render_field(form.services) }}
+      </dl>
+      <p><input type=submit value=Submit>
+    </form>
+{% endblock %}

@@ -99,7 +99,7 @@ class Loadmonitorv2Functions:
             print(sql_commit)
             self._execute_sql(sql_commit)
             if int(srv['server_type']) == 1:
-                srv_id = self._id_from_name(srv['name'])[0]
+                srv_id = self._id_from_name(srv['name'])[0][0]
                 sql_watcher = 'INSERT INTO watched (id_watched, id_watched_by) VALUES (%s, %s)' % (srv_id, srv['watcher'])
                 print(sql_watcher)
                 self._execute_sql(sql_watcher)

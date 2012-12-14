@@ -361,7 +361,9 @@ class ManageDatasetWs(ManageDataset):
             trunk = 'trunk%s' % (i)
             # On veut n Trunks dans le contexte default
             n = 11
-            if i < (n + 1):
+            if self.trunk_context == 'Incall':
+                context = self.trunk_context
+            elif i < (n + 1):
                 context = 'default'
             # Les autres Trunks arrivent vers les autres contextes
             else:

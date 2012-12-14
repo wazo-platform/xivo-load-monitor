@@ -202,30 +202,17 @@ def show_server(server):
 def add_server():
     form = AddServerForm(csrf_enabled=False)
     if form.validate_on_submit():
-        flash('Success')
         new_server = {'name':form.name.data,
                     'ip':form.ip.data,
                     'domain':form.domain.data,
                     'server_type':form.server_type.data,
                     'watcher':form.watcher.data,
                     'services':form.services.data}
-        print('########################################')
-        print(new_server)
-        print('########################################')
         lmv2 = Loadmonitorv2Functions(conf)
         lmv2.add_server(new_server)
         return redirect(url_for('hello'))
     else:
         print('DEBUG ===> %s' % (form.validate_on_submit()))
-        new_server = {'name':form.name.data,
-                    'ip':form.ip.data,
-                    'domain':form.domain.data,
-                    'server_type':form.server_type.data,
-                    'watcher':form.watcher.data,
-                    'services':form.services.data}
-        print('########################################')
-        print(new_server)
-        print('########################################')
 
     return render_template('add-server.html', form=form)
 

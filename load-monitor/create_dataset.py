@@ -28,6 +28,7 @@ from lettuce.registry import world
 from xivo_ws import XivoServer
 from xivo_ws import User
 from xivo_ws import UserLine
+from xivo_ws import UserVoicemail
 from xivo_ws import Agent
 from xivo_ws import Queue
 from xivo_ws import Group
@@ -77,6 +78,9 @@ class ManageDataset(object):
  
         self.nb_users = config.getint(section, 'nb_users')
         self.users_first_line = config.getint(section, 'users_first_line')
+
+        self.voicemail = config.getboolean(section, 'voicemail')
+        self.user_ip = config.get(section,'user_ip')
  
         self.nb_agents = config.getint(section, 'nb_agents')
         self.agents_first_id = config.getint(section, 'agents_first_id')
@@ -113,6 +117,8 @@ class ManageDataset(object):
         if nb_user_to_create > 0:
             self._add_users(user_start_lastname)
             self._wait_for_commit()
+        if self.user_ip != 'None':
+            self._update_user_ip(self.user_ip)
 
         if self.nb_agents > 0:
             agent_start_id = self._agent_start_id(agent_list)
@@ -185,6 +191,9 @@ class ManageDataset(object):
             line = user_start_lastname + ( id_context * 100 ) + position + self.users_first_line
             return u'%s' % context, u'%s' % line
 
+    def _user_to_specific_group(self, user_id, group_id):
+        print('TODO: Add a user to a specific group')
+
     def _agent_list(self):
         return self.xs.agents.list()
 
@@ -203,6 +212,12 @@ class ManageDataset(object):
             user_lastname = u'%s' % (str(offset).zfill(4))
             user = User(firstname=u'User', lastname=user_lastname)
             user.line = UserLine(context=user_context, number=line)
+            if self.voicemail:
+                voicemail_name = line
+                voicemail_number = line
+                if self.debug: print('Activating voicemail %s' % voicemail_name)
+                user.voicemail = UserVoicemail(name=voicemail_name, number=voicemail_number)
+                user.language = 'fr_FR'
             users.append(user)
             if self.debug: print('DEBUG: User %s with line %s to context %s, for a total of %s users' % (user_lastname, line, user_context, self.nb_users))
         print('Import %d users...' % len(users))
@@ -403,6 +418,18 @@ class ManageDatasetWs(ManageDataset):
         cmd = ['echo', '*:*:asterisk:asterisk:proformatique', '>', '.pgpass']
         world.ssh_client_xivo.check_call(cmd)
         cmd = ['chmod', '600', '.pgpass']
+        world.ssh_client_xivo.check_call(cmd)
+
+    def _update_user_ip(self, ip):
+        psql_cmd = 'UPDATE usersip SET HOST=\'%s\' ' % ip + 'WHERE callerid LIKE \'%User%\';'
+        psql_file = os.path.join(_ROOT_DIR, 'utils', 'update_user_ip.sql')
+        f = open(psql_file, 'w')
+        f.write(psql_cmd)
+        f.close()
+        cmd = ['scp', psql_file, 'root@%s:/tmp/' % world.xivo_host]
+        self._exec_ssh_cmd(cmd)
+        cmd = ['sudo', '-u', 'postgres', 'psql', '-d', 'asterisk', '-f', '/tmp/update_user_ip.sql']
+        print(cmd)
         world.ssh_client_xivo.check_call(cmd)
 
     def _exec_ssh_cmd(self, cmd):

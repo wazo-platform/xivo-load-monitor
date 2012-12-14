@@ -18,6 +18,10 @@ nb_contexts = 20
 nb_users = 250
 # First line number defined in the context
 users_first_line = 1100
+# Voicemail
+voicemail = False
+# Loadtester IP, default: None
+user_ip = None
 
 # User groups
 # default, user_grp = None

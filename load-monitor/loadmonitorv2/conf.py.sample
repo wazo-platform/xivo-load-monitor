@@ -19,3 +19,5 @@ pg_host = '127.0.0.1'
 pg_username = 'username'
 pg_password = 'password'
 pg_db = 'loadmonitorv2'
+
+loadtest_bash_script = ''

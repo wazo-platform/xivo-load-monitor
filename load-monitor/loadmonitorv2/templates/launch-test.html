@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% from "_formhelpers.html" import render_field %}
+{% block content %}
+    <h2>Launch a loadtest</h2>
+    <form method=post action="/LaunchTest/">
+      <dl>
+        {{ render_field(form.server) }} 
+        {{ render_field(form.rate) }}
+        {{ render_field(form.rate_period) }}
+      </dl>
+      <p><input type=submit value=Submit>
+    </form>
+{% endblock %}

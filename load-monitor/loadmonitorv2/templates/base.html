@@ -33,8 +33,10 @@
             </div>
             <div id=actions>
                 <b>Actions :</b><br />
-                <br />&nbsp;
-                <a href="{{ url_for('add_server') }}">Add a server</a>
+                <ul>
+                    <li><a href="{{ url_for('add_server') }}">Add a server</a></li>
+                    <li><a href="{{url_for('launch_test') }}">Launch a test</a></li>
+                </ul>
             </div>
         </div>
         <div id=graphs>

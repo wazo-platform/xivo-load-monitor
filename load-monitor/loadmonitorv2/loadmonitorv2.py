@@ -21,11 +21,13 @@ import psycopg2
 import re
 import sys
 import conf
+import subprocess
 
 app = Flask(__name__)
 
-class Loadmonitorv2Functions:
+class Loadmonitorv2:
     def __init__(self, conf):
+        self.lt_sh_script = conf.loadtest_bash_script
         pg_host = conf.pg_host
         pg_username = conf.pg_username
         pg_password = conf.pg_password
@@ -112,6 +114,16 @@ class Loadmonitorv2Functions:
             return False
         return True
 
+    def launch_loadtest(self, loadtest_params):
+        src_ip = _server_ip(loadtest_params['server'])
+        dest_ip = _server_munin_ip(loadtest_params['server'])
+        cmd = [self.lt_sh_script, src_ip, dest_ip, loadtest_params['rate'], loadtest_params['rate_period']]
+        subprocess.call(cmd)
+
+    def server_choices(self):
+        sql = 'SELECT serveur.id, serveur.nom FROM serveur WHERE type = \'1\''
+        return self._execute_and_fetch_sql(sql)
+
     def _id_from_name(self, name):
         sql = 'SELECT serveur.id FROM serveur WHERE serveur.nom = \'%s\'' % (name)
         return self._execute_and_fetch_sql(sql)
@@ -144,6 +156,13 @@ class Loadmonitorv2Functions:
         sql = 'SELECT * from services_by_serveur WHERE id_serveur = %s' % (server_id)
         return self._execute_and_fetch_sql(sql)
 
+    def _server_ip(self, server):
+        sql = 'SELECT ip FROM serveur WHERE nom = %s' % (server)
+        return self._execute_and_fetch(sql)
+
+    def _server_munin_ip(self, server):
+        sql = 'SELECT serveur.ip FROM serveur WHERE serveur.id IN ( SELECT watched.id_watched_by FROM watched WHERE watched.id_watched IN ( SELECT serveur.id FROM serveur WHERE serveur.nom = %s ))' % (server)
+
     def _execute_and_fetch_sql(self, sql):
         self.cursor.execute(sql)
         return self.cursor.fetchall()
@@ -159,7 +178,7 @@ class Loadmonitorv2Functions:
         return [ (str(x[0]), x[1]) for x in data]
 
 class AddServerForm(Form):
-    lmv2 = Loadmonitorv2Functions(conf)
+    lmv2 = Loadmonitorv2(conf)
     types_choices = lmv2._strize(lmv2.server_types_choices())
     munin_choices = lmv2._strize(lmv2.munin_servers())
     services_choices = lmv2._strize(lmv2.service_list())
@@ -174,9 +193,17 @@ class AddServerForm(Form):
     watcher = SelectField(u'Serveur Munin associe', choices=munin_choices)
     services = SelectMultipleField(u'Services monitores', choices=services_choices)
 
+class LaunchLoadtest(Form):
+    lmv2 = Loadmonitorv2(conf)
+    server_choices = lmv2._strize(lmv2.server_choices())
+
+    server = SelectField(u'Serveur cible', choices=server_choices)
+    rate = TextField(u'Nombre d\'appels / periode (format: 1.0 || 2.0 || ...)', [validators.Required()])
+    rate_period = TextField(u'Periode entre 2*n appels (en ms)', [validators.Required()])
+
 @app.route('/')
 def hello():
-    lmv2 = Loadmonitorv2Functions(conf)
+    lmv2 = Loadmonitorv2(conf)
     xivo_list = lmv2.xivo_list()
     lmv2.close_conn()
     if xivo_list:
@@ -189,7 +216,7 @@ def hello():
 def show_server(server):
     # get list of graphs for 'server'
     if server != 'None':
-        lmv2 = Loadmonitorv2Functions(conf)
+        lmv2 = Loadmonitorv2(conf)
         server_params = lmv2.server_params(server)[0]
         graph_list = lmv2.gen_page(server_params)
         xivo_server_list = lmv2.xivo_server_list()
@@ -208,13 +235,25 @@ def add_server():
                     'server_type':form.server_type.data,
                     'watcher':form.watcher.data,
                     'services':form.services.data}
-        lmv2 = Loadmonitorv2Functions(conf)
+        lmv2 = Loadmonitorv2(conf)
         lmv2.add_server(new_server)
         return redirect(url_for('hello'))
     else:
         print('DEBUG ===> %s' % (form.validate_on_submit()))
 
     return render_template('add-server.html', form=form)
+
+@app.route('/LaunchTest/', methods=('GET', 'POST'))
+def launch_test():
+    form = LaunchLoadtest(csrf_enabled=False)
+    if form.validate_on_submit():
+        loadtest_params = {'server':form.server.data,
+                           'rate':form.rate.data,
+                           'rate_period':form.rate_period.data}
+        lmv2 = Loadmonitorv2(conf)
+        lmv2.launch_loadtest(loadtest_params)
+        return redirect(url_for('hello'))
+    return render_template('launch-test.html', form=form)
 
 if __name__ == "__main__":
     app.debug = True

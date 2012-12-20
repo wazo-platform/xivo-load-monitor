@@ -20,4 +20,6 @@ pg_username = 'username'
 pg_password = 'password'
 pg_db = 'loadmonitorv2'
 
-loadtest_bash_script = ''
+sipp = '/usr/local/bin/sipp'
+xivo_loadtest = '/home/trafgen/git/xivo-loadtest/'
+general_log_dir = '/var/www/load-monitor-2/logs/sip_logs/'

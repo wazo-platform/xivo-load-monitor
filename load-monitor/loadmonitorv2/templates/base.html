@@ -21,11 +21,13 @@
                 <b>Servers :</b><br />
                 <ul>
                     {% for srv in server_list %}
-                        {% if srv[0] == server %}
+                        {% if srv == server %}
                             <b>
                         {% endif %}
-                        <li><a href=http://load-monitor/ServerSelect/{{ srv[0] }}>{{ srv[0] }}</a></li>
-                        {% if srv[0] == server %}
+                        <li><a href=http://load-monitor/ServerSelect/{{ srv }}>{{ srv }}</a>
+                            {% if srv[server] == 'true' %}*{% endif %}
+                        </li>
+                        {% if srv == server %}
                             </b>
                         {% endif %}
                     {% endfor %}
@@ -35,7 +37,10 @@
                 <b>Actions :</b><br />
                 <ul>
                     <li><a href="{{ url_for('add_server') }}">Add a server</a></li>
-                    <li><a href="{{url_for('launch_test') }}">Launch a test</a></li>
+                    <li><a href="{{ url_for('launch_test') }}">Launch a test</a></li>
+                    {% if server_list[server] == 'true' %}
+                        <li><a href="{{ url_for('stop_test', servername=server) }}">Stop the test</a></li>
+                    {% endif %}
                 </ul>
             </div>
         </div>

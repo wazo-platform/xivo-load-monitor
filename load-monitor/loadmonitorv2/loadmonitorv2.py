@@ -22,12 +22,16 @@ import re
 import sys
 import conf
 import subprocess
+import os
+import psutil
 
 app = Flask(__name__)
 
 class Loadmonitorv2:
     def __init__(self, conf):
-        self.lt_sh_script = conf.loadtest_bash_script
+        self.sipp = conf.sipp
+        self.xivo_loadtest = conf.xivo_loadtest
+        self.general_log_dir = conf.general_log_dir
         pg_host = conf.pg_host
         pg_username = conf.pg_username
         pg_password = conf.pg_password
@@ -101,7 +105,7 @@ class Loadmonitorv2:
             print(sql_commit)
             self._execute_sql(sql_commit)
             if int(srv['server_type']) == 1:
-                srv_id = self._id_from_name(srv['name'])[0][0]
+                srv_id = self._id_from_name(srv['name'])
                 sql_watcher = 'INSERT INTO watched (id_watched, id_watched_by) VALUES (%s, %s)' % (srv_id, srv['watcher'])
                 print(sql_watcher)
                 self._execute_sql(sql_watcher)
@@ -115,10 +119,32 @@ class Loadmonitorv2:
         return True
 
     def launch_loadtest(self, loadtest_params):
-        src_ip = _server_ip(loadtest_params['server'])
-        dest_ip = _server_munin_ip(loadtest_params['server'])
-        cmd = [self.lt_sh_script, src_ip, dest_ip, loadtest_params['rate'], loadtest_params['rate_period']]
-        subprocess.call(cmd)
+        src_ip = self._server_munin_ip(loadtest_params['server'])
+        dest_ip = self._server_ip(loadtest_params['server'])
+        try:
+            src_ip = '10.38.1.254'
+            cmd = 'sudo %s -bg -inf %s/load-tester/scenarios/call-then-hangup/users.csv \
+-sf %s/load-tester/scenarios/call-then-hangup/scenario.xml \
+-p 5060 -i %s -r %s -rp %s %s' \
+            % (self.sipp, self.xivo_loadtest, self.xivo_loadtest, src_ip,
+                    loadtest_params['rate'], loadtest_params['rate_period'], dest_ip)
+            output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+        except Exception, e:
+            output = str(e.output)
+        pid = re.split('\]', re.split('\[', output)[1])[0]
+        self._store_pid(pid, loadtest_params['server'])
+
+    def stop_loadtest(self, servername):
+        pid = self._pid_of_running_test(servername)
+        cmd = 'sudo kill %s' % (pid)
+        subprocess.call(cmd, shell=True)
+
+    def is_test_running(self, servername):
+        pid = self._pid_of_running_test(servername)
+        if pid:
+            for pid_item in psutil.get_pid_list():
+                if pid_item == pid:
+                    return pid
 
     def server_choices(self):
         sql = 'SELECT serveur.id, serveur.nom FROM serveur WHERE type = \'1\''
@@ -126,7 +152,11 @@ class Loadmonitorv2:
 
     def _id_from_name(self, name):
         sql = 'SELECT serveur.id FROM serveur WHERE serveur.nom = \'%s\'' % (name)
-        return self._execute_and_fetch_sql(sql)
+        return self._execute_and_fetch_sql(sql)[0][0]
+
+    def _name_from_id(self, srv_id):
+        sql = 'SELECT serveur.nom FROM serveur WHERE serveur.id = %s' % (srv_id)
+        return self._execute_and_fetch_sql(sql)[0][0]
 
     def _complete_uri(self, uri, server_params):
         munin_ip = self._munin_ip(server_params[0])[0][0]
@@ -157,11 +187,33 @@ class Loadmonitorv2:
         return self._execute_and_fetch_sql(sql)
 
     def _server_ip(self, server):
-        sql = 'SELECT ip FROM serveur WHERE nom = %s' % (server)
-        return self._execute_and_fetch(sql)
+        sql = 'SELECT ip FROM serveur WHERE id = %s' % (server)
+        return self._execute_and_fetch_sql(sql)[0][0]
 
     def _server_munin_ip(self, server):
-        sql = 'SELECT serveur.ip FROM serveur WHERE serveur.id IN ( SELECT watched.id_watched_by FROM watched WHERE watched.id_watched IN ( SELECT serveur.id FROM serveur WHERE serveur.nom = %s ))' % (server)
+        sql = 'SELECT serveur.ip FROM serveur WHERE serveur.id IN ( SELECT watched.id_watched_by FROM watched WHERE watched.id_watched = %s )' % (server)
+        return self._execute_and_fetch_sql(sql)[0][0]
+
+    """
+    def _last_loadtest_pid(self, server):
+        servername = self._name_from_id(server)
+        log_dir = '%s/%s' % (self.general_log_dir, servername)
+        files = sorted(os.listdir(log_dir), key=os.path.getctime)
+        for filename in reversed(files):
+            if re.search('.csv$', filename):
+                split_filename = re.split('_', filename)
+                if len(split_filename) == 3:
+                    return split_filename[1]
+    """
+
+    def _store_pid(self, pid, server_id):
+        sql = 'INSERT INTO log_info (id_server, pid_test, start_time) VALUES (%s, %s, now())' % (server_id, pid)
+        self._execute_sql(sql)
+
+    def _pid_of_running_test(self, servername):
+        server_id = self._id_from_name(servername)
+        sql = 'SELECT pid_test FROM log_info WHERE id_server = %s ORDER BY start_time DESC' % (server_id)
+        return self._execute_and_fetch_sql(sql)
 
     def _execute_and_fetch_sql(self, sql):
         self.cursor.execute(sql)
@@ -199,7 +251,7 @@ class LaunchLoadtest(Form):
 
     server = SelectField(u'Serveur cible', choices=server_choices)
     rate = TextField(u'Nombre d\'appels / periode (format: 1.0 || 2.0 || ...)', [validators.Required()])
-    rate_period = TextField(u'Periode entre 2*n appels (en ms)', [validators.Required()])
+    rate_period = TextField(u'Periode entre 2*n appels (en s)', [validators.Required()])
 
 @app.route('/')
 def hello():
@@ -220,10 +272,17 @@ def show_server(server):
         server_params = lmv2.server_params(server)[0]
         graph_list = lmv2.gen_page(server_params)
         xivo_server_list = lmv2.xivo_server_list()
+        server_list = {}
+        for servername in xivo_server_list:
+            pid = lmv2.is_test_running(servername[0])
+            if pid:
+                server_list.update({servername[0]: 'true'})
+            else:
+                server_list.update({servername[0]: 'false'})
     else:
         graph_list=[]
         xivo_server_list=[]
-    return render_template('graphs.html', graphs=graph_list, server=server, server_list=xivo_server_list)
+    return render_template('graphs.html', graphs=graph_list, server=server, server_list=server_list)
 
 @app.route('/AddServer/', methods=('GET', 'POST'))
 def add_server():
@@ -249,11 +308,17 @@ def launch_test():
     if form.validate_on_submit():
         loadtest_params = {'server':form.server.data,
                            'rate':form.rate.data,
-                           'rate_period':form.rate_period.data}
+                           'rate_period':str(int(form.rate_period.data) * 1000)}
         lmv2 = Loadmonitorv2(conf)
         lmv2.launch_loadtest(loadtest_params)
         return redirect(url_for('hello'))
     return render_template('launch-test.html', form=form)
+
+@app.route('/StopTest/<servername>')
+def stop_test(servername):
+    lmv2 = Loadmonitorv2(conf)
+    lmv2.stop_loadtest(servername)
+    return redirect(url_for('hello'))
 
 if __name__ == "__main__":
     app.debug = True

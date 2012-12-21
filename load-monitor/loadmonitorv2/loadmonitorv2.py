@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from flask import Flask, redirect, url_for, render_template, request, flash
+from flask import Flask, redirect, url_for, render_template, get_template_attribute, request, flash
 from flask.ext.wtf import Form, TextField, SelectField, SelectMultipleField, Required, validators
 import psycopg2
 import re
@@ -121,16 +121,16 @@ class Loadmonitorv2:
     def launch_loadtest(self, loadtest_params):
         src_ip = self._server_munin_ip(loadtest_params['server'])
         dest_ip = self._server_ip(loadtest_params['server'])
-        try:
-            src_ip = '10.38.1.254'
-            cmd = 'sudo %s -bg -inf %s/load-tester/scenarios/call-then-hangup/users.csv \
+        if self.is_test_running(self._name_from_id(loadtest_params['server'])):
+            try:
+                cmd = 'sudo %s -bg -inf %s/load-tester/scenarios/call-then-hangup/users.csv \
 -sf %s/load-tester/scenarios/call-then-hangup/scenario.xml \
 -p 5060 -i %s -r %s -rp %s %s' \
-            % (self.sipp, self.xivo_loadtest, self.xivo_loadtest, src_ip,
-                    loadtest_params['rate'], loadtest_params['rate_period'], dest_ip)
-            output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
-        except Exception, e:
-            output = str(e.output)
+                % (self.sipp, self.xivo_loadtest, self.xivo_loadtest, src_ip,
+                        loadtest_params['rate'], loadtest_params['rate_period'], dest_ip)
+                output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+            except Exception, e:
+                output = str(e.output)
         pid = re.split('\]', re.split('\[', output)[1])[0]
         self._store_pid(pid, loadtest_params['server'])
 
@@ -193,18 +193,6 @@ class Loadmonitorv2:
     def _server_munin_ip(self, server):
         sql = 'SELECT serveur.ip FROM serveur WHERE serveur.id IN ( SELECT watched.id_watched_by FROM watched WHERE watched.id_watched = %s )' % (server)
         return self._execute_and_fetch_sql(sql)[0][0]
-
-    """
-    def _last_loadtest_pid(self, server):
-        servername = self._name_from_id(server)
-        log_dir = '%s/%s' % (self.general_log_dir, servername)
-        files = sorted(os.listdir(log_dir), key=os.path.getctime)
-        for filename in reversed(files):
-            if re.search('.csv$', filename):
-                split_filename = re.split('_', filename)
-                if len(split_filename) == 3:
-                    return split_filename[1]
-    """
 
     def _store_pid(self, pid, server_id):
         sql = 'INSERT INTO log_info (id_server, pid_test, start_time) VALUES (%s, %s, now())' % (server_id, pid)
@@ -282,7 +270,8 @@ def show_server(server):
     else:
         graph_list=[]
         xivo_server_list=[]
-    return render_template('graphs.html', graphs=graph_list, server=server, server_list=server_list)
+    leftmenu_macro = get_template_attribute('_leftmenu.html', 'left_menu')
+    return render_template('graphs.html', leftmenu_macro=leftmenu_macro(server_list, server), graphs=graph_list, server=server)
 
 @app.route('/AddServer/', methods=('GET', 'POST'))
 def add_server():

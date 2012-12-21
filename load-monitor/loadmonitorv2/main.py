@@ -18,4 +18,4 @@
 import sys
 sys.path.insert(0, '/var/www/load-monitor-v2/www/')
 
-from loadmonitorv2 import app as application
+from app import app as application

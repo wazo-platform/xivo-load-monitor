@@ -76,9 +76,12 @@ def add_server():
 def launch_test():
     form = LaunchLoadtest(csrf_enabled=False)
     if form.validate_on_submit():
+        """
         loadtest_params = {'server':form.server.data,
                            'rate':form.rate.data,
                            'rate_period':str(int(form.rate_period.data) * 1000)}
+        """
+        loadtest_params = {'server':form.server.data}
         lmv2 = Loadmonitorv2(conf)
         lmv2.launch_loadtest(loadtest_params)
         return redirect(url_for('hello'))

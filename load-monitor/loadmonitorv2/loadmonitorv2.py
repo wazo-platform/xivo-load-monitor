@@ -236,6 +236,8 @@ class LaunchLoadtest(Form):
     server_choices = lmv2._strize(lmv2.server_choices())
 
     server = SelectField(u'Serveur cible', choices=server_choices)
+    """
     rate = TextField(u'Nombre d\'appels / periode (format: 1.0 || 2.0 || ...)', [validators.Required()])
     rate_period = TextField(u'Periode entre 2*n appels (en s)', [validators.Required()])
+    """
 

@@ -121,7 +121,7 @@ class Loadmonitorv2(object):
         src_ip = self._server_munin_ip(loadtest_params['server'])
         dest_ip = self._server_ip(loadtest_params['server'])
         if not self.is_test_running(self._name_from_id(loadtest_params['server'])):
-            cmd = '{loadtest_path}/load-tester/load-tester -c {loadtest_path}/etc/conf-{servername}.py -d {lmv2_path}/logs/sip_logs/{servername}/ {loadtest_path}/scenarios/call-then-hangup/'.format(loadtest_path = self.xivo_loadtest, servername = self._name_from_id(loadtest_params['server']), lmv2_path = '/var/www/load-monitor-v2')
+            cmd = '{loadtest_path}/load-tester -c {loadtest_path}/etc/conf-{servername}.py -d {lmv2_path}/logs/sip_logs/{servername}/ {loadtest_path}/scenarios/call-then-hangup/'.format(loadtest_path = self.xivo_loadtest, servername = self._name_from_id(loadtest_params['server']), lmv2_path = '/var/www/load-monitor-v2')
             print('################ COMMAND:')
             print(cmd)
             try:

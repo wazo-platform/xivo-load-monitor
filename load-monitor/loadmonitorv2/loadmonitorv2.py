@@ -120,14 +120,13 @@ class Loadmonitorv2(object):
     def launch_loadtest(self, loadtest_params):
         src_ip = self._server_munin_ip(loadtest_params['server'])
         dest_ip = self._server_ip(loadtest_params['server'])
-        if self.is_test_running(self._name_from_id(loadtest_params['server'])):
+        if not self.is_test_running(self._name_from_id(loadtest_params['server'])):
+            cmd = '{loadtest_path}/load-tester/load-tester -c {loadtest_path}/etc/conf-{servername}.py -d {lmv2_path}/logs/sip_logs/{servername}/ {loadtest_path}/scenarios/call-then-hangup/'.format(loadtest_path = self.xivo_loadtest, servername = self._name_from_id(loadtest_params['server']), lmv2_path = '/var/www/load-monitor-v2')
+            print('################ COMMAND:')
+            print(cmd)
             try:
-                cmd = 'sudo %s -bg -inf %s/load-tester/scenarios/call-then-hangup/users.csv \
-    -sf %s/load-tester/scenarios/call-then-hangup/scenario.xml \
-    -p 5060 -i %s -r %s -rp %s %s' \
-                % (self.sipp, self.xivo_loadtest, self.xivo_loadtest, src_ip,
-                        loadtest_params['rate'], loadtest_params['rate_period'], dest_ip)
-                output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+                p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                output = p.communicate()[0]
             except Exception, e:
                 output = str(e.output)
         pid = re.split('\]', re.split('\[', output)[1])[0]

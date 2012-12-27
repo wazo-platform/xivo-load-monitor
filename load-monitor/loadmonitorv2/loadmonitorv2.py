@@ -138,11 +138,13 @@ class Loadmonitorv2(object):
         subprocess.call(cmd, shell=True)
 
     def is_test_running(self, servername):
-        pid = self._pid_of_running_test(servername)
-        if pid:
+        try:
+            pid = self._pid_of_running_test(servername)[0][0]
             for pid_item in psutil.get_pid_list():
                 if pid_item == pid:
                     return pid
+        except:
+            pass
 
     def server_choices(self):
         sql = 'SELECT serveur.id, serveur.nom FROM serveur WHERE type = \'1\''
@@ -206,11 +208,8 @@ class Loadmonitorv2(object):
         return self.cursor.fetchall()
 
     def _execute_sql(self, sql):
-        try:
-            self.cursor.execute(sql)
-            return True
-        except:
-            return False
+        self.cursor.execute(sql)
+        return True
 
     def _strize(self, data):
         return [ (str(x[0]), x[1]) for x in data]

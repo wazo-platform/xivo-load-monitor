@@ -8,7 +8,7 @@
                             <b>
                         {% endif %}
                         <li><a href=http://load-monitor/ServerSelect/{{ srv }}>{{ srv }}</a>
-                            {% if srv[server] == 'true' %}*{% endif %}
+                            {% if server_list[srv] == 'true' %}*{% endif %}
                         </li>
                         {% if srv == server %}
                             </b>

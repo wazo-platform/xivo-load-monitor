@@ -44,7 +44,7 @@ def show_server(server):
         server_list = {}
         for servername in xivo_server_list:
             pid = lmv2.is_test_running(servername[0])
-            if pid:
+            if pid is not None:
                 server_list.update({servername[0]: 'true'})
             else:
                 server_list.update({servername[0]: 'false'})

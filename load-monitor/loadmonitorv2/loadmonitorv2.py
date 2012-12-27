@@ -133,7 +133,7 @@ class Loadmonitorv2(object):
         self._store_pid(pid, loadtest_params['server'])
 
     def stop_loadtest(self, servername):
-        pid = self._pid_of_running_test(servername)
+        pid = self._pid_of_running_test(servername)[0][0]
         cmd = 'sudo kill %s' % (pid)
         subprocess.call(cmd, shell=True)
 

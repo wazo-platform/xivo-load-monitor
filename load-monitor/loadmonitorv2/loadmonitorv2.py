@@ -123,7 +123,8 @@ class Loadmonitorv2(object):
     def launch_loadtest(self, loadtest_params):
         src_ip = self._server_munin_ip(loadtest_params['server'])
         dest_ip = self._server_ip(loadtest_params['server'])
-        if not self.is_test_running(self._name_from_id(loadtest_params['server'])):
+        servername = self._name_from_id(loadtest_params['server'])
+        if not self.is_test_running(servername):
             cmd = [ '%s/load-tester' % (self.xivo_loadtest), '-b', '-c',
                     '%s/etc/conf-%s.py' % (self.xivo_loadtest, servername),
                     '-d', '%s/logs/sip_logs/%s' % ('/var/www/load-monitor-v2', servername),

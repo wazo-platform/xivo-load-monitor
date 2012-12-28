@@ -124,10 +124,17 @@ class Loadmonitorv2(object):
         src_ip = self._server_munin_ip(loadtest_params['server'])
         dest_ip = self._server_ip(loadtest_params['server'])
         if not self.is_test_running(self._name_from_id(loadtest_params['server'])):
-            cmd = 'cd {loadtest_path} && {loadtest_path}/load-tester -b -c {loadtest_path}/etc/conf-{servername}.py -d {lmv2_path}/logs/sip_logs/{servername}/ {loadtest_path}/scenarios/call-then-hangup/'.format(loadtest_path = self.xivo_loadtest, servername = self._name_from_id(loadtest_params['server']), lmv2_path = '/var/www/load-monitor-v2')
+            cmd = [ '%s/load-tester' % (self.xivo_loadtest), '-b', '-c',
+                    '%s/etc/conf-%s.py' % (self.xivo_loadtest, servername),
+                    '-d', '%s/logs/sip_logs/%s' % ('/var/www/load-monitor-v2', servername),
+                    '%s/scenarios/call-then-hangup/' % (self.xivo_loadtest),
+                    ]
             try:
-                p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                output = p.communicate()[0]
+                p = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                while True:
+                    output = p.stdout.readline()
+                    if re.search(r'\[[0-9]+\]', output) is not None:
+                        break
             except Exception, e:
                 output = str(e.output)
         pid = re.split('\]', re.split('\[', output)[1])[0]
@@ -135,7 +142,7 @@ class Loadmonitorv2(object):
 
     def stop_loadtest(self, servername):
         pid = self._pid_of_running_test(servername)[0][0]
-        cmd = 'sudo kill %s' % (pid)
+        cmd = 'sudo kill -9 %s' % (pid)
         subprocess.call(cmd, shell=True)
 
     def is_test_running(self, servername):

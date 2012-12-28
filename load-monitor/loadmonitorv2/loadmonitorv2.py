@@ -47,6 +47,9 @@ class Loadmonitorv2(object):
     def close_conn(self):
         self.conn.close()
 
+    def pg_commit(self):
+        self.conn.commit()
+
     def xivo_list(self):
         sql = 'SELECT * FROM serveur WHERE type=1'
         return self._execute_and_fetch_sql(sql)
@@ -122,8 +125,6 @@ class Loadmonitorv2(object):
         dest_ip = self._server_ip(loadtest_params['server'])
         if not self.is_test_running(self._name_from_id(loadtest_params['server'])):
             cmd = 'cd {loadtest_path} && {loadtest_path}/load-tester -b -c {loadtest_path}/etc/conf-{servername}.py -d {lmv2_path}/logs/sip_logs/{servername}/ {loadtest_path}/scenarios/call-then-hangup/'.format(loadtest_path = self.xivo_loadtest, servername = self._name_from_id(loadtest_params['server']), lmv2_path = '/var/www/load-monitor-v2')
-            print('################ COMMAND:')
-            print(cmd)
             try:
                 p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 output = p.communicate()[0]
@@ -209,7 +210,7 @@ class Loadmonitorv2(object):
 
     def _execute_sql(self, sql):
         self.cursor.execute(sql)
-        return True
+        self.pg_commit()
 
     def _strize(self, data):
         return [ (str(x[0]), x[1]) for x in data]

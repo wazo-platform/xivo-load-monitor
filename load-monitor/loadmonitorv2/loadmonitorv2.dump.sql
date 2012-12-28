@@ -391,7 +391,7 @@ ALTER TABLE ONLY watched ALTER COLUMN id SET DEFAULT nextval('watched_id_seq'::r
 -- Data for Name: serveur; Type: TABLE DATA; Schema: public; Owner: loadmonitorv2
 --
 
-INSERT INTO serveur (id, nom, ip, domain, type) VALUES (1, 'loadmonitorv2', '10.38.1.252', 'steven.lan-quebec.avencall.com', 5);
+INSERT INTO serveur (id, nom, ip, domain, type) VALUES (1, 'loadmonitorv2', '10.38.1.252', 'lan-quebec.avencall.com', 5);
 
 
 --

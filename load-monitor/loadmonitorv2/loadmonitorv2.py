@@ -118,6 +118,7 @@ class Loadmonitorv2(object):
         except Exception as e:
             print(e)
             return False
+        os.mkdir('/var/www/load-monitor-v2/logs/sip_logs/%s' % (srv['name']))
         return True
 
     def launch_loadtest(self, loadtest_params):

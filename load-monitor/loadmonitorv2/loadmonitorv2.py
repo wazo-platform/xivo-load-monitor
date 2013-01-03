@@ -161,7 +161,7 @@ class Loadmonitorv2(object):
         return self._execute_and_fetch_sql(sql)
 
     def start_test_date(self, servername):
-        sql = 'SELECT start_time FROM log_info WHERE id IN (SELECT serveur.id FROM serveur WHERE serveur.nom = \'%s\')' % (servername)
+        sql = 'SELECT start_time FROM log_info WHERE id_server IN (SELECT serveur.id FROM serveur WHERE serveur.nom = \'%s\') ORDER BY start_time DESC LIMIT 1;' % (servername)
         return self._execute_and_fetch_sql(sql)[0][0]
 
     def _id_from_name(self, name):

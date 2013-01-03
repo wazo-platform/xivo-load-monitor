@@ -160,6 +160,10 @@ class Loadmonitorv2(object):
         sql = 'SELECT serveur.id, serveur.nom FROM serveur WHERE type = \'1\''
         return self._execute_and_fetch_sql(sql)
 
+    def start_test_date(self, servername):
+        sql = 'SELECT start_time FROM log_info WHERE id IN (SELECT serveur.id FROM serveur WHERE serveur.nom = \'%s\')' % (servername)
+        return self._execute_and_fetch_sql(sql)[0][0]
+
     def _id_from_name(self, name):
         sql = 'SELECT serveur.id FROM serveur WHERE serveur.nom = \'%s\'' % (name)
         return self._execute_and_fetch_sql(sql)[0][0]

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import calendar
 import conf
 from flask import Flask, redirect, url_for, render_template, get_template_attribute, request, flash
 from loadmonitorv2 import Loadmonitorv2, AddServerForm, LaunchLoadtest
@@ -46,13 +47,16 @@ def show_server(server):
             pid = lmv2.is_test_running(servername[0])
             if pid is not None:
                 server_list.update({servername[0]: 'true'})
+                start_test_date = lmv2.start_test_date(servername[0])
             else:
                 server_list.update({servername[0]: 'false'})
     else:
         graph_list=[]
         xivo_server_list=[]
+    start_test_date = lmv2.start_test_date(servername[0])
+    start_test_date_format = '%s %s - %s:%s' % (start_test_date.day, calendar.month_name[start_test_date.month], start_test_date.hour, start_test_date.minute)
     leftmenu_macro = get_template_attribute('_leftmenu.html', 'left_menu')
-    return render_template('graphs.html', leftmenu_macro=leftmenu_macro(server_list, server), graphs=graph_list, server=server)
+    return render_template('graphs.html', leftmenu_macro=leftmenu_macro(server_list, server), graphs=graph_list, server=server, start_test_date=start_test_date_format)
 
 @app.route('/AddServer/', methods=('GET', 'POST'))
 def add_server():

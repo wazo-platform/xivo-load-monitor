@@ -48,13 +48,13 @@ def show_server(server):
             if pid is not None:
                 server_list.update({servername[0]: 'true'})
                 start_test_date = lmv2.start_test_date(servername[0])
+                start_test_date_format = '%s %s - %s:%s' % (start_test_date.day, calendar.month_name[start_test_date.month], start_test_date.hour, start_test_date.minute)
             else:
                 server_list.update({servername[0]: 'false'})
+                start_test_date_format = 'No test running'
     else:
         graph_list=[]
         xivo_server_list=[]
-    start_test_date = lmv2.start_test_date(servername[0])
-    start_test_date_format = '%s %s - %s:%s' % (start_test_date.day, calendar.month_name[start_test_date.month], start_test_date.hour, start_test_date.minute)
     leftmenu_macro = get_template_attribute('_leftmenu.html', 'left_menu')
     return render_template('graphs.html', leftmenu_macro=leftmenu_macro(server_list, server), graphs=graph_list, server=server, start_test_date=start_test_date_format)
 

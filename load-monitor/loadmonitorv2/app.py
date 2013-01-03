@@ -43,15 +43,16 @@ def show_server(server):
         graph_list = lmv2.gen_page(server_params)
         xivo_server_list = lmv2.xivo_server_list()
         server_list = {}
+        start_test_date_format = 'No test running'
         for servername in xivo_server_list:
             pid = lmv2.is_test_running(servername[0])
             if pid is not None:
                 server_list.update({servername[0]: 'true'})
-                start_test_date = lmv2.start_test_date(servername[0])
-                start_test_date_format = '%s %s - %s:%s' % (start_test_date.day, calendar.month_name[start_test_date.month], start_test_date.hour, start_test_date.minute)
+                if servername[0] == server:
+                    start_test_date = lmv2.start_test_date(servername[0])
+                    start_test_date_format = '%s %s - %s:%s' % (start_test_date.day, calendar.month_name[start_test_date.month], start_test_date.hour, start_test_date.minute)
             else:
                 server_list.update({servername[0]: 'false'})
-                start_test_date_format = 'No test running'
     else:
         graph_list=[]
         xivo_server_list=[]

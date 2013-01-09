@@ -140,11 +140,13 @@ class Loadmonitorv2(object):
             except Exception, e:
                 output = str(e.output)
         pid = re.split('\]', re.split('\[', output)[1])[0]
+        self._launch_login_logoff_agents(loadtest_params['server'])
         self._store_pid(pid, loadtest_params['server'])
 
     def stop_loadtest(self, servername):
         pid = self._pid_of_running_test(servername)[0][0]
-        cmd = 'sudo kill %s' % (pid)
+        pid_lla = self._pid_login_logoff_agents(servername)
+        cmd = 'sudo kill %s %s' % (pid, pid_lla)
         subprocess.call(cmd, shell=True)
 
     def is_test_running(self, servername):
@@ -227,6 +229,25 @@ class Loadmonitorv2(object):
 
     def _strize(self, data):
         return [ (str(x[0]), x[1]) for x in data]
+
+    def _launch_login_logoff_agents(self, server):
+        cmd = ['python', 'login_logoff_agents.py']
+        subprocess.call(cmd)
+
+    def _pid_login_logoff_agents(self, servername):
+        pid_list = psutil.get_pid_list()
+        for pid in pid_list:
+            try:
+                p = psutil.Process(pid)
+                for cmd in p.cmdline:
+                    if re.search('login_logoff_agents.py', cmd):
+                        return pid
+                    else
+                        pid = None
+            except:
+                pass
+        return pid
+
 
 class AddServerForm(Form):
     lmv2 = Loadmonitorv2(conf)

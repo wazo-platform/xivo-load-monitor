@@ -241,8 +241,9 @@ class Loadmonitorv2(object):
                 p = psutil.Process(pid)
                 for cmd in p.cmdline:
                     if re.search('login_logoff_agents.py', cmd):
-                        return pid
-                    else
+                        if re.search(servername, str(p.cmdline)):
+                            return pid
+                    else:
                         pid = None
             except:
                 pass

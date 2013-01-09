@@ -17,17 +17,46 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import re
+import sys
 import daemon
 import subprocess
+import argparse
 from time import sleep
 from random import choice
 from random import randint
 
+def main():
+    parsed_args = _parse_args()
 
-class LogoffLoginAgent():
+    hostname = parsed_args.hostname
+    if hostname == None:
+        print '[Error] - hostname not defined'
+        sys.exit(1)
 
-    def __init__(self):
-        self.xivo_hostname = 'xivo-load'
+    with daemon.DaemonContext():
+        lla = LogoffLoginAgent(hostname)
+        try:
+            while True:
+                lla.main()
+                sleep(randint(2,4))
+        except:
+            sys.exit(1)
+
+def _parse_args():
+    parser = _new_argument_parser()
+    return parser.parse_args()
+
+def _new_argument_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-H', '--hostname', type=str,
+                        help='Hostname of the tested server')
+    return parser
+
+
+class LogoffLoginAgent(object):
+
+    def __init__(self, hostname):
+        self.xivo_hostname = hostname
 
     def _agent_list(self):
         cmd = [ "xivo-agentctl", "-H", self.xivo_hostname, "-c", "statuses" ]
@@ -71,9 +100,5 @@ class LogoffLoginAgent():
         sleep(randint(2,5))
         self._logon_agent(random_agent)
 
-
-with daemon.DaemonContext():
-    lla = LogoffLoginAgent()
-    while True:
-        lla.main()
-        sleep(randint(2,4))
+if __name__ == "__main__":
+    main()

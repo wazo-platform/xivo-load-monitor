@@ -1,4 +1,4 @@
-{% macro left_menu(server_list, server) %}
+{% macro left_menu(server_list, server, url) %}
         <div id=menu>
             <div id=selectserver>
                 <b>Servers :</b><br />
@@ -7,7 +7,7 @@
                         {% if srv == server %}
                             <b>
                         {% endif %}
-                        <li><a href=http://load-monitor/ServerSelect/{{ srv }}>{{ srv }}</a>
+                        <li><a href=http://{{ url }}/ServerSelect/{{ srv }}>{{ srv }}</a>
                             {% if server_list[srv] == 'true' %}*{% endif %}
                         </li>
                         {% if srv == server %}

@@ -233,7 +233,8 @@ class Loadmonitorv2(object):
     def _strize(self, data):
         return [ (str(x[0]), x[1]) for x in data]
 
-    def _launch_login_logoff_agents(self, servername):
+    def _launch_login_logoff_agents(self, server_id):
+        servername = self._name_from_id(server_id)
         cmd = ['python', 'login_logoff_agents.py', '-H', servername]
         subprocess.call(cmd)
 

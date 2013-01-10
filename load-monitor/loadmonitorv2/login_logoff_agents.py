@@ -35,9 +35,10 @@ def main():
 
     with daemon.DaemonContext():
         lla = LogoffLoginAgent(hostname)
+        unlog_agents = []
         try:
             while True:
-                lla.main()
+                unlog_agents = lla.main(unlog_agents)
                 sleep(randint(2,4))
         except:
             sys.exit(1)
@@ -93,12 +94,29 @@ class LogoffLoginAgent(object):
         print(cmd)
         subprocess.call(cmd, shell=True)
 
-    def main(self):
+    def _count_and_logoff(self, unlog_agents):
         agent_list = self._agent_list()
         random_agent = self._random_agent(agent_list)
         self._logoff_agent(random_agent['agent_number'])
-        sleep(randint(2,5))
-        self._logon_agent(random_agent)
+        unlog_agents.append(random_agent)
+        return unlog_agents
+
+    def _count_and_logon(self, unlog_agents):
+        key = randint(0,len(unlog_agents)) - 1
+        self._logon_agent(unlog_agents[key])
+        del unlog_agents[key]
+        return unlog_agents
+
+    def main(self, unlog_agents):
+        wtd = randint(0,1)
+        if len(unlog_agents) < 5:
+            unlog_agents = self._count_and_logoff(unlog_agents)
+        elif wtd == 0 and len(unlog_agents) < 51:
+            unlog_agents = self._count_and_logoff(unlog_agents)
+        else:
+            unlog_agents = self._count_and_logon(unlog_agents)
+        return unlog_agents
+
 
 if __name__ == "__main__":
     main()

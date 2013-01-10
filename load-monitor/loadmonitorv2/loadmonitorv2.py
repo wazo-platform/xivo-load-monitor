@@ -30,6 +30,7 @@ class Loadmonitorv2(object):
     def __init__(self, conf):
         self.sipp = conf.sipp
         self.xivo_loadtest = conf.xivo_loadtest
+        self.xivo_loadmonitor = conf.xivo_loadmonitor
         self.general_log_dir = conf.general_log_dir
         pg_host = conf.pg_host
         pg_username = conf.pg_username
@@ -235,7 +236,8 @@ class Loadmonitorv2(object):
 
     def _launch_login_logoff_agents(self, server_id):
         servername = self._name_from_id(server_id)
-        cmd = ['python', 'login_logoff_agents.py', '-H', servername]
+        login_logoff_script = '%s/login_logoff_agents.py' % (self.xivo_loadmonitor)
+        cmd = ['python', login_logoff_script, '-H', servername]
         subprocess.call(cmd)
 
     def _pid_login_logoff_agents(self, servername):

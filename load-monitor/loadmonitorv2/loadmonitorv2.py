@@ -248,10 +248,10 @@ class Loadmonitorv2(object):
                         if re.search(servername, str(p.cmdline)):
                             return pid
                     else:
-                        pid = None
+                        p_pid = None
             except:
                 pass
-        return pid
+        return p_pid
 
 
 class AddServerForm(Form):

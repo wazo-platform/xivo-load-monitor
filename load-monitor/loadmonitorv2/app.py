@@ -37,7 +37,6 @@ def hello():
 
 @app.route('/ServerSelect/<server>')
 def show_server(server):
-    url = re.split('/', request.base_url)[2]
     # get list of graphs for 'server'
     if server != 'None':
         lmv2 = Loadmonitorv2(conf)
@@ -59,7 +58,7 @@ def show_server(server):
         graph_list=[]
         xivo_server_list=[]
     leftmenu_macro = get_template_attribute('_leftmenu.html', 'left_menu')
-    return render_template('graphs.html', leftmenu_macro=leftmenu_macro(server_list, server, url), graphs=graph_list, server=server, start_test_date=start_test_date_format)
+    return render_template('graphs.html', leftmenu_macro=leftmenu_macro(server_list, server), graphs=graph_list, server=server, start_test_date=start_test_date_format)
 
 @app.route('/AddServer/', methods=('GET', 'POST'))
 def add_server():

@@ -9,6 +9,8 @@ user = xivo-ws
 secret = xivo-ws
 # Number of trunks
 nb_trunks = 30
+# Number of trunks in default context
+nb_default_trunks = 11
 # Trunks contexts, default: Incall
 # can be 'other', to let the script calculate what context to use
 trunk_context = Incall

@@ -34,6 +34,7 @@ from xivo_ws import Queue
 from xivo_ws import Group
 from xivo_ws import Incall
 from xivo_ws import QueueDestination
+from xivo_ws import GroupDestination
 from xivo_lettuce import terrain
 from xivo_lettuce.manager_ws import context_manager_ws, trunksip_manager_ws
 from xivo_lettuce.ssh import SSHClient
@@ -74,6 +75,8 @@ class ManageDataset(object):
         self.secret = config.get(section, 'secret')
 
         self.nb_trunks = config.getint(section, 'nb_trunks')
+        self.nb_default_trunks = config.getint(section, 'nb_default_trunks')
+        self.trunk_context = config.get(section, 'trunk_context')
         self.nb_contexts = config.getint(section, 'nb_contexts')
  
         self.nb_users = config.getint(section, 'nb_users')
@@ -111,14 +114,18 @@ class ManageDataset(object):
         user_start_lastname = self._user_start_lastname(user_list)
         if self.debug: print('DEBUG: user_start_lastname : %s' % user_start_lastname)
         if ( user_start_lastname + self.users_first_line ) > self.users_first_line:
-            nb_user_to_create = user_start_lastname - self.nb_users
+            nb_user_to_create = self.nb_users - user_start_lastname
         else:
             nb_user_to_create = self.nb_users
+        if self.debug: print('DEBUG: nb_user_to_create : %s' % nb_user_to_create)
         if nb_user_to_create > 0:
             self._add_users(user_start_lastname)
             self._wait_for_commit()
         if self.user_ip != 'None':
             self._update_user_ip(self.user_ip)
+
+        if self.user_grp != 'None':
+            self._fill_in_groups()
 
         if self.nb_agents > 0:
             agent_start_id = self._agent_start_id(agent_list)
@@ -142,12 +149,29 @@ class ManageDataset(object):
         if ( nb_queue_add > ( queue_start_nb - self.queues_first_context )):
             self._add_queues(nb_queue_add, queue_start_nb, agent_id)
 
-        # Recall of _queue_list() once queues are created
-        queue_list = self._queue_list()
-        queue_list_nb_id = self._queue_list_nb_id(queue_list)
-        nb_incalls_add = self._nb_incalls_add(queue_list_nb_id)
-        if nb_incalls_add > 0:
-            self._add_incall(queue_list_nb_id, nb_incalls_add)
+        nb_group_add = self._nb_group_add()
+        if nb_queue_add > 0:
+            # Recall of _queue_list() once queues are created
+            queue_list = self._queue_list()
+            queue_list_nb_id = self._queue_list_nb_id(queue_list)
+            nb_incalls_add = self._nb_incalls_add(queue_list_nb_id)
+            if nb_incalls_add > 0:
+                self._add_incall_queue(queue_list_nb_id, nb_incalls_add)
+        elif nb_group_add > 0 and self.user_grp != 'None':
+            group_list = self._group_list()
+            incall_list = self._incall_list()
+            try:
+                last_incall_number = int(incall_list[-1].number)
+            except Exception,e:
+                last_incall_number = 0
+                if self.debug: print(e)
+            if self.debug and self.debug_lvl == 2: print('########### DEBUG: last_incall_number = %s' % (last_incall_number))
+            for group in group_list:
+                if self.debug and self.debug_lvl == 2: print('########### DEBUG: group number = %s' % (group.number))
+                group_number_condition = last_incall_number - self.incalls_first_line + self.group_first_context
+                if self.debug and self.debug_lvl == 2: print('########### DEBUG: group number condition = %s' % (group_number_condition))
+                if int(group.number) > group_number_condition or last_incall_number == 0:
+                    self._add_incall_group(group.number, group.id)
  
     def _initiate_connection(self):
         try:
@@ -176,6 +200,23 @@ class ManageDataset(object):
             users_start_lastname = 0
         return users_start_lastname
 
+    def _user_id_from_user_number(self, user_number):
+        user_list = self._user_list()
+        for user in user_list:
+            try:
+                if user_number == int(user.lastname) + self.users_first_line:
+                    if self.debug and self.debug_lvl == 2: print('##### DEBUG: user.id : %s' % (user.id))
+                    return int(user.id)
+                if self.debug and self.debug_lvl == 2: print('##### DEBUG: user.lastname : %s' % (int(user.lastname)))
+                if self.debug and self.debug_lvl == 2: print('##### DEBUG: user_number : %s' % (int(user_number)))
+            except Exception,e:
+                if self.debug: print(e)
+                continue
+
+    def _group_infos_from_group_number(self, group_number):
+        group = self.xs.groups.search_by_number(group_number)
+        return group[0]
+
     def _user_context(self, offset, user_start_lastname):
         if ( offset - user_start_lastname ) < self.nb_user_in_default_context or self.nb_user_in_other_context == 0:
             return u'default', offset + self.users_first_line
@@ -191,8 +232,33 @@ class ManageDataset(object):
             line = user_start_lastname + ( id_context * 100 ) + position + self.users_first_line
             return u'%s' % context, u'%s' % line
 
-    def _user_to_specific_group(self, user_id, group_id):
-        print('TODO: Add a user to a specific group')
+    def _fill_in_groups(self):
+        group_list = self._group_list()
+        g_offset = 0
+        u_offset = 0
+        for grp_cnf in self.user_grp.split('/'):
+            for number_of_groups_with_this_number_of_users in range(0, int(grp_cnf.split(',')[0])):
+                u_list = []
+                for number_of_users_in_this_kind_of_groups in range(0, int(grp_cnf.split(',')[1])):
+                    user_number = self.users_first_line + u_offset
+                    user_id = self._user_id_from_user_number(user_number)
+                    if self.debug and self.debug_lvl == 2: print('### Debug: user_id is %s' % (user_id))
+                    u_list.append(user_id)
+                    if self.debug and self.debug_lvl == 2: print('### Debug: list is %s' % (u_list))
+                    u_offset += 1
+                group_number = self.group_first_context + g_offset
+                group_infos = self._group_infos_from_group_number(group_number)
+                self._user_to_specific_group(u_list, group_infos)
+                g_offset += 1
+
+    def _user_to_specific_group(self, l, group_infos):
+        print('### Users %s to group %s' % (l, group_infos.name))
+        group = Group(id=group_infos.id,
+                      name=group_infos.name,
+                      number=group_infos.number,
+                      context=group_infos.context,
+                      user_ids=l)
+        self.xs.group.edit(group)
 
     def _agent_list(self):
         return self.xs.agents.list()
@@ -249,6 +315,9 @@ class ManageDataset(object):
     def _queue_list(self):
         return self.xs.queues.list()
 
+    def _group_list(self):
+        return self.xs.groups.list()
+
     def _queue_start_nb(self, queue_list):
         if len(queue_list) > 0:
             queue_start_nb = int(queue_list[-1].number) + 1
@@ -285,9 +354,8 @@ class ManageDataset(object):
     def _nb_incalls_add(self, queue_list_nb_id):
         return len(queue_list_nb_id) - len(self._incall_list())
 
-    def _add_incall(self, queue_list_nb_id, nb_incalls_add):
+    def _add_incall_queue(self, queue_list_nb_id, nb_incalls_add):
         print 'Add Incalls ..'
-        # TODO : Boucle FOR qui commence au N ieme element donne par nb_incalls_add
         for queue_nb, queue_id in queue_list_nb_id[-nb_incalls_add:]:
             incall = Incall()
             incall.number = self.incalls_first_line + int(queue_nb) - self.queues_first_context
@@ -295,6 +363,22 @@ class ManageDataset(object):
             incall.destination = QueueDestination(queue_id)
             print 'Adding incall %s %s...' % (incall.number, incall.destination)
             self.xs.incalls.add(incall)
+
+    def _add_incall_group(self, group_number, group_id):
+        incall = Incall()
+        incall.number = self.incalls_first_line + int(group_number) - self.group_first_context
+        incall.context = 'from-extern'
+        incall.destination = GroupDestination(group_id)
+        print 'Adding incall %s %s...' % (incall.number, incall.destination)
+        self.xs.incalls.add(incall)
+
+    def _nb_group_add(self):
+        nb_group_add = 0
+        user_grp_array = self.user_grp.split('/')
+        for grp_cnf in user_grp_array:
+            nb_group = int(grp_cnf.split(',')[0])
+            nb_group_add += nb_group
+        return nb_group_add
 
     def _wait_for_commit(self):
         print('Waiting for commit ...')
@@ -322,13 +406,15 @@ class ManageDatasetWs(ManageDataset):
         try:
             self._prepare_context()
             #print('DEBUG, CONTEXT SKIPPED')
-        except:
+        except Exception,e:
             print('Skipping, contexts already has a configuration ..')
+            if self.debug: print(e)
         try:
             self._prepare_trunk()
             #print('DEBUG, TRUNK SKIPPED')
-        except:
+        except Exception,e:
             print('Skipping, trunks already has a configuration ..')
+            if self.debug: print(e)
         if self.user_grp != 'None':
             self._add_group_to_specific_context()
 
@@ -360,19 +446,21 @@ class ManageDatasetWs(ManageDataset):
         for i in range(1, self.nb_trunks + 1):
             trunk = 'trunk%s' % (i)
             # On veut n Trunks dans le contexte default
-            n = 11
-            if self.trunk_context == 'Incall':
+            n = self.nb_default_trunks
+            if self.trunk_context != 'other':
                 context = self.trunk_context
             elif i < (n + 1):
                 context = 'default'
             # Les autres Trunks arrivent vers les autres contextes
             else:
                 context = 'context%s' % (i - n)
-            trunksip_manager_ws.add_or_replace_trunksip(world.xivo_host, trunk, context, 'user')
+            trunksip_manager_ws.add_trunksip(world.xivo_host, trunk, context, 'user')
+            #trunksip_manager_ws.add_or_replace_trunksip(world.xivo_host, trunk, context, 'user')
 
     def _add_group_to_specific_context(self):
         flag = 0
         general_group_number = 0
+        group_list = self._group_list()
         for group in self.user_grp.split('/'):
             nb_groups = int(group.split(',')[0])
             nb_user_by_grp = int(group.split(',')[1])
@@ -390,7 +478,12 @@ class ManageDatasetWs(ManageDataset):
                         flag += 1
                     else:
                         flag = 0
-                self._add_group(group_name_number, group_line_number, context)
+                add_group_action = True
+                for group in group_list:
+                    if int(group.number) == group_line_number:
+                        add_group_action = False
+                if add_group_action is True:
+                    self._add_group(group_name_number, group_line_number, context)
                 general_group_number += 1
 
     def _add_group(self, grp_name_nb, grp_line, context):

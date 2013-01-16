@@ -46,7 +46,7 @@ def main():
 
     section = parsed_args.section
     if section == None:
-        print '[Error] - section to use not defined'
+        print('[Error] - section to use not defined')
         sys.exit(1)
 
     dataset = ManageDatasetWs(section)
@@ -177,7 +177,7 @@ class ManageDataset(object):
         try:
             self.xs = XivoServer(self.host, self.user, self.secret)
         except:
-            print '[Error] - No connection to XiVO'
+            print('[Error] - No connection to XiVO')
             sys.exit(1)
 
     def _user_last_lastname(self, user_list):
@@ -185,7 +185,7 @@ class ManageDataset(object):
             last_id = max([int(user.lastname) for user in user_list if user.lastname != ''])
             return last_id
         except:
-            print '[INFO] - No other loadtest users found, beginning with %s' % self.users_first_line
+            print('[INFO] - No other loadtest users found, beginning with %s' % self.users_first_line)
             return 0
 
     def _user_list(self):
@@ -271,7 +271,7 @@ class ManageDataset(object):
         return agent_start_id
 
     def _add_users(self, user_start_lastname):
-        print 'Add users ..'
+        print('Add users ..')
         users = []
         for offset in range(user_start_lastname, self.nb_users):
             user_context, line = self._user_context(offset, user_start_lastname)
@@ -294,7 +294,7 @@ class ManageDataset(object):
  
         agent_end_id = self.agents_first_id + self.nb_agents
         if agent_start_id < agent_end_id:
-            print 'Add agents ..'
+            print('Add agents ..')
             for offset in range(agent_start_id, agent_end_id):
                 if self.debug: print('agent_start_id: %s, agent_end_id: %s, offset: %s' % (agent_start_id, agent_end_id, offset))
                 agent = Agent(firstname=u'Agent',
@@ -304,7 +304,7 @@ class ManageDataset(object):
                           context=u'default',
                           users=[ user_id[offset - agent_start_id] ])
                 self.xs.agents.add(agent)
-                print 'Agent %s number %s added on user %s' % (agent.lastname, offset, agent.users)
+                print('Agent %s number %s added on user %s' % (agent.lastname, offset, agent.users))
  
     def _agent_id(self, agent_list, available_agents):
         return sorted([agent.id for agent in agent_list])[-available_agents:]
@@ -329,7 +329,7 @@ class ManageDataset(object):
         for offset in range(queue_start_nb, queue_start_nb + nb_queues_add):
             first_agent_index = ( offset - self.queues_first_context ) * ( self.nb_agent_by_queue - self.queue_member_overlap ) 
             if self.debug: print('first_agent_index: %s' % first_agent_index)
-            print 'Add queue..'
+            print('Add queue..')
             queue = Queue(name=u'queue%s' % offset,
                           display_name=u'Queue %s' % offset,
                           number=offset,
@@ -343,7 +343,7 @@ class ManageDataset(object):
             else:
                 print('No agents to add to the queue, perhaps no live reload so just re-run the script')
                 sys.exit(1)
-            print 'Queue %s number added with %s agents' % (offset, queue.agents)
+            print('Queue %s number added with %s agents' % (offset, queue.agents))
  
     def _queue_list_nb_id(self, queue_list):
         return sorted((queue.number, queue.id) for queue in queue_list)
@@ -355,13 +355,13 @@ class ManageDataset(object):
         return len(queue_list_nb_id) - len(self._incall_list())
 
     def _add_incall_queue(self, queue_list_nb_id, nb_incalls_add):
-        print 'Add Incalls ..'
+        print('Add Incalls ..')
         for queue_nb, queue_id in queue_list_nb_id[-nb_incalls_add:]:
             incall = Incall()
             incall.number = self.incalls_first_line + int(queue_nb) - self.queues_first_context
             incall.context = 'from-extern'
             incall.destination = QueueDestination(queue_id)
-            print 'Adding incall %s %s...' % (incall.number, incall.destination)
+            print('Adding incall %s %s...' % (incall.number, incall.destination))
             self.xs.incalls.add(incall)
 
     def _add_incall_group(self, group_number, group_id):
@@ -369,7 +369,7 @@ class ManageDataset(object):
         incall.number = self.incalls_first_line + int(group_number) - self.group_first_context
         incall.context = 'from-extern'
         incall.destination = GroupDestination(group_id)
-        print 'Adding incall %s %s...' % (incall.number, incall.destination)
+        print('Adding incall %s %s...' % (incall.number, incall.destination))
         self.xs.incalls.add(incall)
 
     def _nb_group_add(self):
@@ -419,7 +419,7 @@ class ManageDatasetWs(ManageDataset):
             self._add_group_to_specific_context()
 
     def _prepare_context(self):
-        print 'Configuring Context..'
+        print('Configuring Context..')
         if self.nb_user_in_other_context == 0:
             default_plus_range_end = 999
         else:
@@ -442,7 +442,7 @@ class ManageDatasetWs(ManageDataset):
         context_manager_ws.update_contextnumbers_incall('from-extern', 1000, 2000, 4)
 
     def _prepare_trunk(self):
-        print 'Configuring Trunk..'
+        print('Configuring Trunk..')
         for i in range(1, self.nb_trunks + 1):
             trunk = 'trunk%s' % (i)
             # On veut n Trunks dans le contexte default
@@ -455,7 +455,6 @@ class ManageDatasetWs(ManageDataset):
             else:
                 context = 'context%s' % (i - n)
             trunksip_manager_ws.add_trunksip(world.xivo_host, trunk, context, 'user')
-            #trunksip_manager_ws.add_or_replace_trunksip(world.xivo_host, trunk, context, 'user')
 
     def _add_group_to_specific_context(self):
         flag = 0
@@ -535,8 +534,8 @@ class ManageDatasetWs(ManageDataset):
         (stdoutdata, stderrdata) = p.communicate()
 
         if p.returncode != 0:
-            print stdoutdata
-            print stderrdata
+            print(stdoutdata)
+            print(stderrdata)
 
         return stdoutdata
 

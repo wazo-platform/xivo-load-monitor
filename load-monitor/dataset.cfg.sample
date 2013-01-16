@@ -13,7 +13,7 @@ nb_trunks = 30
 nb_default_trunks = 11
 # Trunks contexts, default: Incall
 # can be 'other', to let the script calculate what context to use
-trunk_context = Incall
+trunk_context = from-extern
 # Number of contexts
 nb_contexts = 20
 # NB: entity must be xivo_entity

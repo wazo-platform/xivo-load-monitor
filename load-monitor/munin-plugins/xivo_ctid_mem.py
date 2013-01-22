@@ -1,6 +1,7 @@
 #!/usr/bin/env python 
+# -*- coding: utf-8 -*-
 
-# Copyright (C) 2012  Avencall
+# Copyright (C) 2012-2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,7 +15,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-
 
 import sys, psutil
 from munin import MuninPlugin

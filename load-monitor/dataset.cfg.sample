@@ -4,18 +4,18 @@ host = 192.168.0.1
 # SSH username
 ssh_user = root
 # Web services username
-user = xivo-ws
+user = admin
 # Web services username's password
-secret = xivo-ws
+secret = proformatique
 # Number of trunks
-nb_trunks = 30
+nb_trunks = 1
 # Number of trunks in default context
-nb_default_trunks = 11
-# Trunks contexts, default: Incall
+nb_default_trunks = 1
+# Trunks contexts, default: from-extern
 # can be 'other', to let the script calculate what context to use
 trunk_context = from-extern
 # Number of contexts
-nb_contexts = 20
+nb_contexts = 0
 # NB: entity must be xivo_entity
 # Number of users to add
 # No more than 1000 users
@@ -47,7 +47,7 @@ agents_first_id = 9000
 nb_agent_by_queue = 30
 # Number of agents in queue n and in queue n+1
 queue_member_overlap = 5
-# First queue number defined on the context
+# First number defined for the queue
 # No more than 100 queues allowed by context
 queues_first_context = 11000
 
@@ -56,10 +56,10 @@ incalls_first_line = 1500
 
 # User context configuration
 
-# nb_user_in_default_context + ( nb_user_in_other_context * nb_contexts ) 
-# must be equal to nb_users
-nb_user_in_default_context = 98
-nb_user_in_other_context = 8
+# nb_user_in_default_context + ( nb_user_in_other_context * nb_contexts ) must be equal to nb_users
+nb_user_in_default_context = 250
+# how many users to add in each custom context
+nb_user_in_other_context = 0
 
 # Debug or not
 debug = False

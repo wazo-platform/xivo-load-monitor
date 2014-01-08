@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013 Avencall
+# Copyright (C) 2013-2014 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -77,4 +77,3 @@ def print_mem(n, name, title):
     print 'xc_mem_rss.value ' + str(xc_mem_rss/1024/1024)
     print 'xc_mem_vms.value ' + str(xc_mem_vms/1024/1024)
     print '.'
-

@@ -3,12 +3,20 @@
     <h2>Graphs</h2>
     {% for graph in graphs %}
         <table>
-            <tr><td>:: {{ graph.title }}</td></tr>
-            <tr><td>
+            <tr>
+              <td>:: {{ graph.title }}</td>
+            </tr>
+            <tr>
+              <td>
                 <img src={{ graph.day_uri }}/>
-            </td><td>
+              </td>
+              <td>
                 <img src={{ graph.week_uri }}/>
-            </td></tr>
+              </td>
+              <td>
+                <img src={{ graph.month_uri }}/>
+              </td>
+            </tr>
         </table>
     {% endfor %}
 {% endblock %}

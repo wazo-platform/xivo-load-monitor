@@ -75,8 +75,9 @@ class Loadmonitorv2(object):
             complete_uri = self._complete_uri(uri, server_params)
             day_uri = '%s alt=%s width=%s height=%s' % (complete_uri, alt, width, height)
             week_uri = re.sub('day', 'week', day_uri)
-            liste.append({'title': title, 'day_uri': day_uri, 'week_uri': week_uri})
-        
+            month_uri = re.sub('day', 'month', day_uri)
+            liste.append({'title': title, 'day_uri': day_uri, 'week_uri': week_uri, 'month_uri': month_uri})
+
         return liste
 
     def xivo_server_list(self):

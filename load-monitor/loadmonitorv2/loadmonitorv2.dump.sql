@@ -410,7 +410,6 @@ INSERT INTO serveur_type (id, type) VALUES (5, 'all_but_xivo');
 --
 
 INSERT INTO services (id, service, uri, alt, width, height) VALUES (3, 'Asterisk file descriptors', 'xivo_asterisk_file_descriptors-day.png', 'Asterisk file descriptors', 497, 280);
-INSERT INTO services (id, service, uri, alt, width, height) VALUES (4, 'XiVO CTID socket', 'xivo_ctid_socket_py-day.png', 'XIVO CTID Socket', 497, 280);
 INSERT INTO services (id, service, uri, alt, width, height) VALUES (5, 'XiVO CTID memory', 'xivo_ctid_mem_py-day.png', 'XIVO CTID Memory', 497, 280);
 INSERT INTO services (id, service, uri, alt, width, height) VALUES (6, 'XiVO Asterisk memory', 'xivo_asterisk_mem_py-day.png', 'XIVO Asterisk Memory', 497, 280);
 INSERT INTO services (id, service, uri, alt, width, height) VALUES (7, 'XiVO PostgreSQL memory', 'pgsql_mem_py-day.png', 'XIVO PostgreSQL Memory', 497, 292);

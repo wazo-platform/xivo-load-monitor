@@ -99,6 +99,25 @@ def stop_test(servername):
     lmv2.stop_loadtest(servername)
     return redirect(url_for('hello'))
 
+
+@app.route('/api/<server>/start', methods=('POST'))
+def api_launch_test(server):
+    lvm2 = Loadmonitorv2(conf)
+    if server not in lvm2.xivo_server_list():
+        return ("server '%s' does not exist" % server, 400)
+    if not lvm2.is_test_running(server):
+        lvm2.launch_loadtest({'server': server})
+
+
+@app.route('/api/<server>/stop', methods=('POST'))
+def api_stop_test(server):
+    lvm2 = Loadmonitorv2(conf)
+    if server not in lvm2.xivo_server_list():
+        return ("server '%s' does not exist" % server, 400)
+    if lvm2.is_test_running(server):
+        lvm2.stop_loadtest(server)
+
+
 if __name__ == "__main__":
     app.debug = True
     app.secret_key = '\xbd5\xcc\xa3\xfd\x7f\x15WY\xc9J[\x07\n\x1d\xa7\xc4\x14k\xecL%7.'

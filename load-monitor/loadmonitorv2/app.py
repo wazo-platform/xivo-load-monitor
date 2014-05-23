@@ -100,16 +100,19 @@ def stop_test(servername):
 
 
 def server_list(lvm2):
-    return [l[0] for l in lvm2.xivo_server_list()]
+    servers = lvm2.xivo_list()
+    return dict((row[1], row[0]) for row in servers)
 
 
 @app.route('/api/<server>/start', methods=('POST',))
 def api_launch_test(server):
     lvm2 = Loadmonitorv2(conf)
-    if server not in server_list(lvm2):
+    servers = server_list(lvm2)
+    if server not in servers:
         return ("server '%s' does not exist" % server, 400)
     if not lvm2.is_test_running(server):
-        lvm2.launch_loadtest({'server': server})
+        lvm2.launch_loadtest({'server': servers[server]})
+    return ('', 200)
 
 
 @app.route('/api/<server>/stop', methods=('POST',))
@@ -119,6 +122,7 @@ def api_stop_test(server):
         return ("server '%s' does not exist" % server, 400)
     if lvm2.is_test_running(server):
         lvm2.stop_loadtest(server)
+    return ('', 200)
 
 
 if __name__ == "__main__":

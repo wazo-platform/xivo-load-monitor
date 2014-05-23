@@ -21,7 +21,6 @@ import re
 from flask import Flask, redirect, url_for, render_template, get_template_attribute, request, flash
 from loadmonitorv2 import Loadmonitorv2, AddServerForm, LaunchLoadtest
 
-
 app = Flask(__name__)
 
 @app.route('/')

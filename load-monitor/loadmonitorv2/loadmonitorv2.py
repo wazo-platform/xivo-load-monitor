@@ -137,10 +137,12 @@ class Loadmonitorv2(object):
                 p = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 while True:
                     output = p.stdout.readline()
-                    if re.search(r'\[[0-9]+\]', output) is not None:
+                    if not output:
+                        raise Exception('could not retrieve the sipp process pid')
+                    if re.search(r'\[\d+\]', output) is not None:
                         break
-            except Exception, e:
-                output = str(e.output)
+            except Exception as e:
+                output = str(e)
         pid = re.split('\]', re.split('\[', output)[1])[0]
         self._launch_login_logoff_agents(loadtest_params['server'])
         self._store_pid(pid, loadtest_params['server'])

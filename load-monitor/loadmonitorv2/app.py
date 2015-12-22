@@ -29,7 +29,10 @@ def hello():
     xivo_list = lmv2.xivo_list()
     lmv2.close_conn()
     if xivo_list:
-        server = xivo_list[0][1]
+        if len(xivo_list) > 1 and 'xivo-load' in xivo_list[1]:
+            server = 'xivo-load'
+        else:
+            server = xivo_list[0][1]
     else:
         server = 'None'
     return redirect(url_for('show_server', server=server))

@@ -48,7 +48,7 @@ class PgsqlMem(MuninPlugin):
         pg_pid = []
         proc_name = 'postgres'
         for proc in psutil.process_iter():
-            if proc.name.find(proc_name) >= 0 :
+            if proc_name == proc.name():
                 pg_pid.append(proc.pid)
 
         if len(pg_pid) <  1:

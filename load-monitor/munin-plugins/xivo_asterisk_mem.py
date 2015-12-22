@@ -48,11 +48,9 @@ class XivoAsteriskMem(MuninPlugin):
         ast_pid = 0
         proc_name = '/usr/sbin/asterisk'
         for proc in psutil.process_iter():
-            try:
-                if proc.cmdline[0] == proc_name:
-                    ast_pid = proc.pid
-            except:
-                continue
+            if proc_name == proc.name():
+                ast_pid = proc.pid
+                break
 
         if ast_pid == 0:
             print 'ast_mem_res.value 0'

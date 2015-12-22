@@ -22,7 +22,9 @@ import conf
 import subprocess
 import os
 import psutil
-from flask.ext.wtf import Form, TextField, SelectField, SelectMultipleField, Required, validators
+from flask_wtf import Form
+from wtforms import TextField, SelectField, SelectMultipleField
+from wtforms.validators import Required
 
 
 class Loadmonitorv2(object):
@@ -252,11 +254,9 @@ class Loadmonitorv2(object):
                     if re.search('login_logoff_agents.py', cmd):
                         if re.search(servername, str(p.cmdline)):
                             return pid
-                    else:
-                        p_pid = None
-            except:
+            except Exception as e:
                 pass
-        return p_pid
+        return None
 
 
 class AddServerForm(Form):
@@ -265,9 +265,9 @@ class AddServerForm(Form):
     munin_choices = lmv2._strize(lmv2.munin_servers())
     services_choices = lmv2._strize(lmv2.service_list())
 
-    name = TextField('nom', [validators.Required()])
-    ip = TextField('ip', [validators.Required()])
-    domain = TextField('domaine', [validators.Required()])
+    name = TextField('nom', [Required()])
+    ip = TextField('ip', [Required()])
+    domain = TextField('domaine', [Required()])
     name = TextField('nom')
     ip = TextField('ip')
     domain = TextField('domaine')
@@ -281,6 +281,6 @@ class LaunchLoadtest(Form):
 
     server = SelectField(u'Serveur cible', choices=server_choices)
     """
-    rate = TextField(u'Nombre d\'appels / periode (format: 1.0 || 2.0 || ...)', [validators.Required()])
-    rate_period = TextField(u'Periode entre 2*n appels (en s)', [validators.Required()])
+    rate = TextField(u'Nombre d\'appels / periode (format: 1.0 || 2.0 || ...)', [Required()])
+    rate_period = TextField(u'Periode entre 2*n appels (en s)', [Required()])
     """

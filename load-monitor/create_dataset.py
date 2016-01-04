@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -286,8 +286,9 @@ class ManageDataset(object):
                 user.language = 'fr_FR'
             users.append(user)
             if self.debug: print('DEBUG: User %s with line %s to context %s, for a total of %s users' % (user_lastname, line, user_context, self.nb_users))
-        print('Import %d users...' % len(users))
-        self.xs.users.import_(users)
+        print('Adding %d users...' % len(users))
+        for user in users:
+            self.xs.users.import_(user)
 
     def _add_agents(self, agent_start_id, user_list):
         user_id = sorted([user.id for user in user_list])[-self.nb_agents:]

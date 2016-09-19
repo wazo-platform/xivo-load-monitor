@@ -3,7 +3,7 @@ apt-get update
 apt-get -y install git lsof python-pip build-essential python-dev
 mkdir -p /usr/local/src/git
 cd /usr/local/src/git/
-git clone git://git.xivo.fr/official/xivo-loadtest.git
+git clone git://git.xivo.io/official/xivo-loadtest.git
 git clone git://github.com/samuel/python-munin.git
 cd python-munin/
 python setup.py build

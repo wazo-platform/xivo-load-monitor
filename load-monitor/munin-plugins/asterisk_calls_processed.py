@@ -52,6 +52,8 @@ def get_data(tn, command):
 
 def process_data(data):
     last_line = data.split('\n')[-1]
+    if last_line.startswith('Output: '):
+        last_line = last_line[len('Output: '):]
     results = int(last_line.split(' ')[0])/2
     return results
 

@@ -46,7 +46,7 @@ class XivoCtidMem(MuninPlugin):
 
     def execute(self):
         cti_pid = 0
-        proc_name = '/usr/bin/xivo-ctid'
+        proc_name = 'xivo-ctid'
         for proc in psutil.process_iter():
             if proc_name == proc.name():
                 cti_pid = proc.pid

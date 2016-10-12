@@ -46,7 +46,7 @@ class XivoAsteriskMem(MuninPlugin):
 
     def execute(self):
         ast_pid = 0
-        proc_name = '/usr/sbin/asterisk'
+        proc_name = 'asterisk'
         for proc in psutil.process_iter():
             if proc_name == proc.name():
                 ast_pid = proc.pid

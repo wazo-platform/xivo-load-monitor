@@ -417,6 +417,7 @@ INSERT INTO services (id, service, uri, alt, width, height) VALUES (8, 'General 
 INSERT INTO services (id, service, uri, alt, width, height) VALUES (9, 'Load average', 'load-day.png', 'Load Average', 497, 280);
 INSERT INTO services (id, service, uri, alt, width, height) VALUES (1, 'Nb appels simultanes', '', NULL, NULL, NULL);
 INSERT INTO services (id, service, uri, alt, width, height) VALUES (2, 'Nb appels passes', '', NULL, NULL, NULL);
+INSERT INTO services (id, service, uri, alt, width, height) VALUES (10, 'RabbitMQ memory', 'wazo_rabbitmq_memory_py-day.png', 'RabbitMQ memory', 497, 280);
 
 
 --

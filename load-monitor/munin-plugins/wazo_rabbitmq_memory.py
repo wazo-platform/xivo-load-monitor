@@ -41,7 +41,8 @@ class WazoRabbitMQMemory(MuninPlugin):
 
     def execute(self):
         rabbitmq_mem_res, rabbitmq_mem_virt = 0, 0
-        rabbitmq_procs = (proc for proc in psutil.process_iter() if proc.name() == 'beam.smp')
+        rabbitmq_procs = (proc for proc in psutil.process_iter()
+                          if proc.name() == 'beam.smp' and proc.username() == 'rabbitmq')
         for proc in rabbitmq_procs:
             mem = proc.memory_info()
             rabbitmq_mem_res, rabbitmq_mem_virt = mem.rss, mem.vms

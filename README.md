@@ -9,10 +9,10 @@
 git commit
 git push
 
-ssh load-monitor 
-cd /usr/local/xivo-load-monitor/
+ssh xivo-load
+cd /usr/local/src/xivo-load-monitor/
 git pull
-ln -s /etc/munin/plugins/<new_plugin> /usr/local/xivo-load-monitor/loadmonitorv2/munin-plugins/<new_plugin>
+ln -s /etc/munin/plugins/<new_plugin> /usr/local/src/xivo-load-monitor/load-monitor/munin-plugins/<new_plugin>
 xivo-monitoring-update-graphics
 exit
 ```
@@ -21,8 +21,18 @@ exit
 
 ```
 sudo -u postgres psql loadmonitorv2
-insert into services values (default, 'RabbitMQ memory', 'wazo_rabbitmq_memory_py-day.png', 'RabbitMQ memory', 497, 280);
-insert into services_by_serveur values (default, 9, 10);  # where 9 is the serveur id from table serveur and 10 is the service id created above
+INSERT INTO services VALUES (default, 'RabbitMQ memory', 'wazo_rabbitmq_memory_py-day.png', 'RabbitMQ memory', 497, 280);
+INSERT INTO services_by_serveur VALUES (default, 9, 10);  # where 9 is the serveur id from table serveur and 10 is the service id created above
 ```
 
 4. Update the SQL dump so that your new services can be restored
+
+# Dependencies
+
+## Debian
+
+* libdbd-pg-perl
+
+## Python
+
+* http://github.com/samuel/python-munin

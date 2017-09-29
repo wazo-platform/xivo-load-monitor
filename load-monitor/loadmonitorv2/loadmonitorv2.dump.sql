@@ -418,6 +418,7 @@ INSERT INTO services (id, service, uri, alt, width, height) VALUES (9, 'Load ave
 INSERT INTO services (id, service, uri, alt, width, height) VALUES (1, 'Nb appels simultanes', '', NULL, NULL, NULL);
 INSERT INTO services (id, service, uri, alt, width, height) VALUES (2, 'Nb appels passes', '', NULL, NULL, NULL);
 INSERT INTO services (id, service, uri, alt, width, height) VALUES (10, 'RabbitMQ memory', 'wazo_rabbitmq_memory_py-day.png', 'RabbitMQ memory', 497, 280);
+INSERT INTO services (id, service, uri, alt, width, height) VALUES (11, 'PostgreSQL connections', 'postgres_connections_db-day.png', 'PostgreSQL connections', 497, 280);
 
 
 --

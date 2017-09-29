@@ -26,18 +26,3 @@ INSERT INTO services_by_serveur VALUES (default, 9, 10);  # where 9 is the serve
 ```
 
 4. Update the SQL dump so that your new services can be restored
-
-
-# Stock plugins from Munin
-
-* postgres_connections_db
-
-# Dependencies
-
-## Debian
-
-* libdbd-pg-perl
-
-## Python
-
-* http://github.com/samuel/python-munin

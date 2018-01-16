@@ -1,7 +1,7 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ from munin import MuninPlugin
 """
 " http://github.com/samuel/python-munin
 """
+
 
 class PgsqlMem(MuninPlugin):
     args = '--base 1024 -l 0'
@@ -45,29 +46,14 @@ class PgsqlMem(MuninPlugin):
                     min = '0'))]
 
     def execute(self):
-        pg_pid = []
-        proc_name = 'postgres'
-        for proc in psutil.process_iter():
-            if proc_name == proc.name():
-                pg_pid.append(proc.pid)
+        pg_processes = [process for process in psutil.process_iter() if process.name() == 'postgres']
 
-        if len(pg_pid) <  1:
-            print 'pg_mem_res.value 0'
-            print 'pg_mem_virt.value 0'
-            sys.exit(1)
+        pg_mem_res = sum([process.memory_info().rss for process in pg_processes])
+        pg_mem_virt = sum([process.memory_info().vms for process in pg_processes])
 
-        pg_mem_res = 0
-        pg_mem_virt = 0
-        for pid in pg_pid:
-            handler = psutil.Process(pid)
-            pg_mem_res += handler.get_memory_info()[0]
-            pg_mem_virt += handler.get_memory_info()[1]
-
-#        print 'pg_mem_res.value %s' % str(pg_mem_res/1024/1024)
-#        print 'pg_mem_virt.value %s' % str(pg_mem_virt/1024/1024)
         print 'pg_mem_res.value %s' % str(pg_mem_res)
         print 'pg_mem_virt.value %s' % str(pg_mem_virt)
-        
+
 
 if __name__ == "__main__":
     PgsqlMem().run()

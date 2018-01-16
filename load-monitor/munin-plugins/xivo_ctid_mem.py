@@ -1,7 +1,7 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ from munin import MuninPlugin
 """
 " http://github.com/samuel/python-munin
 """
+
 
 class XivoCtidMem(MuninPlugin):
     args = '--base 1024 -l 0'
@@ -58,11 +59,11 @@ class XivoCtidMem(MuninPlugin):
             sys.exit(1)
 
         handler = psutil.Process(cti_pid)
-        cti_mem_res, cti_mem_virt = handler.get_memory_info()
+        cti_memory = handler.memory_info()
 
-        print 'cti_mem_res.value %s' % str(cti_mem_res)
-        print 'cti_mem_virt.value %s' % str(cti_mem_virt)
-        
+        print 'cti_mem_res.value %s' % str(cti_memory.rss)
+        print 'cti_mem_virt.value %s' % str(cti_memory.vms)
+
 
 if __name__ == "__main__":
     XivoCtidMem().run()

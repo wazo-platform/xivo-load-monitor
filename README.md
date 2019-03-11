@@ -10,9 +10,9 @@ git commit
 git push
 
 ssh xivo-load
-cd /usr/local/src/xivo-load-monitor/
+cd /usr/local/src/git/xivo-loadtest/
 git pull
-ln -s /etc/munin/plugins/<new_plugin> /usr/local/src/xivo-load-monitor/load-monitor/munin-plugins/<new_plugin>
+ln -s /etc/munin/plugins/<new_plugin> /usr/local/src/git/xivo-loadtest/load-monitor/munin-plugins/<new_plugin>
 xivo-monitoring-update-graphics
 exit
 ```

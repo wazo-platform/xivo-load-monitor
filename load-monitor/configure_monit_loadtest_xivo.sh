@@ -17,7 +17,6 @@ ln -s /usr/local/src/git/xivo-loadtest/load-monitor/munin-plugins/xivo_asterisk_
 ln -s /usr/local/src/git/xivo-loadtest/load-monitor/munin-plugins/xivo_asterisk_freeze_detect.py
 ln -s /usr/local/src/git/xivo-loadtest/load-monitor/munin-plugins/xivo_asterisk_mem.py
 ln -s /usr/local/src/git/xivo-loadtest/load-monitor/munin-plugins/xivo_asterisk_socket.py
-ln -s /usr/local/src/git/xivo-loadtest/load-monitor/munin-plugins/xivo_ctid_mem.py
 #ln -s /usr/local/src/git/xivo-loadtest/load-monitor/munin-plugins/xivo_disk_space_by_call_munin.py
 ln -s /usr/share/munin/plugins/postgres_connections_db
 sed -i 's/127\.0\.0\.1/0\.0\.0\.0/' /etc/munin/munin-node.conf.tmpl

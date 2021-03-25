@@ -17,11 +17,11 @@
 
 import calendar
 import conf
-import re
-from flask import Flask, redirect, url_for, render_template, get_template_attribute, request, flash
+from flask import Flask, redirect, url_for, render_template, get_template_attribute
 from loadmonitorv2 import Loadmonitorv2, AddServerForm, LaunchLoadtest
 
 app = Flask(__name__)
+
 
 @app.route('/')
 def hello():
@@ -36,6 +36,7 @@ def hello():
     else:
         server = 'None'
     return redirect(url_for('show_server', server=server))
+
 
 @app.route('/ServerSelect/<server>')
 def show_server(server):
@@ -53,25 +54,39 @@ def show_server(server):
                 server_list.update({servername[0]: 'true'})
                 if servername[0] == server:
                     start_test_date = lmv2.start_test_date(servername[0])
-                    start_test_date_format = '%s %s - %s:%s' % (start_test_date.day, calendar.month_name[start_test_date.month], start_test_date.hour, start_test_date.minute)
+                    start_test_date_format = '{} {} - {}:{}'.format(
+                        start_test_date.day,
+                        calendar.month_name[start_test_date.month],
+                        start_test_date.hour,
+                        start_test_date.minute,
+                    )
             else:
                 server_list.update({servername[0]: 'false'})
     else:
-        graph_list=[]
-        xivo_server_list=[]
+        graph_list = []
+        xivo_server_list = []
     leftmenu_macro = get_template_attribute('_leftmenu.html', 'left_menu')
-    return render_template('graphs.html', leftmenu_macro=leftmenu_macro(server_list, server), graphs=graph_list, server=server, start_test_date=start_test_date_format)
+    return render_template(
+        'graphs.html',
+        leftmenu_macro=leftmenu_macro(server_list, server),
+        graphs=graph_list,
+        server=server,
+        start_test_date=start_test_date_format,
+    )
+
 
 @app.route('/AddServer/', methods=('GET', 'POST'))
 def add_server():
     form = AddServerForm(csrf_enabled=False)
     if form.validate_on_submit():
-        new_server = {'name':form.name.data,
-                    'ip':form.ip.data,
-                    'domain':form.domain.data,
-                    'server_type':form.server_type.data,
-                    'watcher':form.watcher.data,
-                    'services':form.services.data}
+        new_server = {
+            'name': form.name.data,
+            'ip': form.ip.data,
+            'domain': form.domain.data,
+            'server_type': form.server_type.data,
+            'watcher': form.watcher.data,
+            'services': form.services.data,
+        }
         lmv2 = Loadmonitorv2(conf)
         lmv2.add_server(new_server)
         return redirect(url_for('hello'))
@@ -79,6 +94,7 @@ def add_server():
         print('DEBUG ===> %s' % (form.validate_on_submit()))
 
     return render_template('add-server.html', form=form)
+
 
 @app.route('/LaunchTest/', methods=('GET', 'POST'))
 def launch_test():
@@ -89,11 +105,12 @@ def launch_test():
                            'rate':form.rate.data,
                            'rate_period':str(int(form.rate_period.data) * 1000)}
         """
-        loadtest_params = {'server':form.server.data}
+        loadtest_params = {'server': form.server.data}
         lmv2 = Loadmonitorv2(conf)
         lmv2.launch_loadtest(loadtest_params)
         return redirect(url_for('hello'))
     return render_template('launch-test.html', form=form)
+
 
 @app.route('/StopTest/<servername>')
 def stop_test(servername):

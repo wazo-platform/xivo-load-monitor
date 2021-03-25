@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,8 +29,8 @@ def hello():
     xivo_list = lmv2.xivo_list()
     lmv2.close_conn()
     if xivo_list:
-        if len(xivo_list) > 1 and 'xivo-load' in xivo_list[1]:
-            server = 'xivo-load'
+        if len(xivo_list) > 1 and 'wazo-load' in xivo_list[1]:
+            server = 'wazo-load'
         else:
             server = xivo_list[0][1]
     else:

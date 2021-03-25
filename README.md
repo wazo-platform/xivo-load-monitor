@@ -12,7 +12,7 @@ git push
 ssh wazo-load
 cd /usr/local/src/xivo-load-monitor/
 git pull
-ln -s /etc/munin/plugins/<new_plugin> /usr/local/src/xivo-load-monitor/load-monitor/munin-plugins/<new_plugin>
+ln -s /usr/local/src/xivo-load-monitor/load-monitor/munin-plugins/<new_plugin> /etc/munin/plugins/<new_plugin>
 xivo-monitoring-update-graphics
 exit
 ```

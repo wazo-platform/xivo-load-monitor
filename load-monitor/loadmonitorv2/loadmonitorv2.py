@@ -159,13 +159,8 @@ class Loadmonitorv2(object):
         subprocess.call(cmd, shell=True)
 
     def is_test_running(self, servername):
-        try:
-            pid = self._pid_of_running_test(servername)[0][0]
-            for pid_item in psutil.get_pid_list():
-                if pid_item == pid:
-                    return pid
-        except:
-            pass
+        pid = self._pid_of_running_test(servername)[0][0]
+        return psutil.pid_exists(pid)
 
     def server_choices(self):
         sql = 'SELECT serveur.id, serveur.nom FROM serveur WHERE type = \'1\''
@@ -246,7 +241,7 @@ class Loadmonitorv2(object):
         subprocess.call(cmd)
 
     def _pid_login_logoff_agents(self, servername):
-        pid_list = psutil.get_pid_list()
+        pid_list = psutil.pids()
         for pid in pid_list:
             try:
                 p = psutil.Process(pid)

@@ -49,8 +49,7 @@ def show_server(server):
         server_list = {}
         start_test_date_format = 'No test running'
         for servername in xivo_server_list:
-            pid = lmv2.is_test_running(servername[0])
-            if pid is not None:
+            if lmv2.is_test_running(servername[0]):
                 server_list.update({servername[0]: 'true'})
                 if servername[0] == server:
                     start_test_date = lmv2.start_test_date(servername[0])

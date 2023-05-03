@@ -1,52 +1,54 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-# Copyright (C) 2012-2014 Avencall
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>
+#!/usr/bin/env python3
+# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 # Need sipsak package
 # Need an Asterisk account
 
 import sys
-import socket
 import os
 import time
 
-from munin import MuninPlugin
-"""
-" http://github.com/samuel/python-munin
-"""
+from pymunin import MuninPlugin, MuninGraph, muninMain
+
 
 class XivoAsteriskFreezeDetect(MuninPlugin):
-    title = 'Xivo Asterisk freeze detect'
-    vlabel = 'Boolean'
-    scaled = False
-    category = 'xivo'
+    """
+    Xivo Asterisk Freeze Detection plugin for Munin
 
-    @property
-    def fields(self):
-        return [('asterisk_freeze_detect', dict(
-                label = 'asterisk_freeze_detect',
-                info = 'Detection of Asterisk freeze',
-                type = 'GAUGE',
-                draw = 'AREA',
-                min = '0',
-                max = '1'))]
+    https://github.com/munin-monitoring/PyMunin3
+    """
 
-    def _sipsak_check(self, host, account):
-        command = '/usr/bin/sipsak -s sip:%s@%s 2> /dev/null' % (account, host)
+    plugin_name = 'xivo_asterisk_freeze_detect'
+    _category = 'xivo'
+    _graph_name = 'asterisk_freeze_detect'
+    _field_name = _graph_name
+    _info = 'Detection of Asterisk freeze'
+
+    def __init__(self, argv=(), env=None, debug=False):
+        super().__init__(argv, env, debug)
+
+        if self.graphEnabled(self._graph_name):
+            graph = MuninGraph(
+                'Xivo Asterisk freeze detect',
+                self._category,
+                vlabel='Boolean',
+                scale=False,
+                info=self._info,
+            )
+            graph.addField(
+                self._field_name,
+                'asterisk_freeze_detect',
+                type='GAUGE',
+                draw='AREA',
+                min='0',
+                max='1',
+                info=self._info,
+            )
+            self.appendGraph(self._graph_name, graph)
+
+    def _sipsak_check(self, host: str, account: str) -> int:
+        command = f'/usr/bin/sipsak -s sip:{account}@{host} 2> /dev/null'
         status = os.system(command)
         if status > 0:
             time.sleep(1)
@@ -56,21 +58,25 @@ class XivoAsteriskFreezeDetect(MuninPlugin):
         else:
             return 0
 
-    def execute(self):
+    def retrieveVals(self) -> None:
+        if self.hasGraph(self._graph_name):
+            host = '127.0.0.1'
+            account = '1000'
 
-        host = '127.0.0.1'
-        account = '1000'
-
-        try:
-            exit_status = self._sipsak_check(host, account)
-            if exit_status == 0:
-                asterisk_freeze_detect = 1
-            else:
+            try:
+                exit_status = self._sipsak_check(host, account)
+                if exit_status == 0:
+                    asterisk_freeze_detect = 1
+                else:
+                    asterisk_freeze_detect = 0
+            except Exception:
                 asterisk_freeze_detect = 0
-        except:
-            asterisk_freeze_detect = 0
 
-        print 'asterisk_freeze_detect.value %s' % str(asterisk_freeze_detect)
+            self.setGraphVal(self._graph_name, self._field_name, asterisk_freeze_detect)
+
+    def autoconf(self) -> bool:
+        return True
+
 
 if __name__ == "__main__":
-    XivoAsteriskFreezeDetect().run()
+    sys.exit(muninMain(XivoAsteriskFreezeDetect))

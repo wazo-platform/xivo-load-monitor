@@ -1,25 +1,11 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-# Copyright (C) 2012-2014 Avencall
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>
+#!/usr/bin/python3
+# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 import argparse
 import os
 import sys
-import telnetlib
+from telnetlib import Telnet
 import sqlite3
 
 
@@ -29,28 +15,30 @@ def main():
     mount_point = parsed_args.disk
     server = parsed_args.server
     db = parsed_args.db
-    if mount_point == None:
-        print '[Error] - partition disk not given'
+    if mount_point is None:
+        print('[Error] - partition disk not given')
         sys.exit(1)
-    if server == None:
-        print '[Error] - IP not given'
+    if server is None:
+        print('[Error] - IP not given')
         sys.exit(1)
-    if db == None:
-        print '[Error] - DB not given'
+    if db is None:
+        print('[Error] - DB not given')
         sys.exit(1)
 
     try:
         conn = sqlite3.connect(db)
     except:
-        print '[Error] - No connection to DB'
+        print('[Error] - No connection to DB')
         sys.exit(1)
 
     o = DiskSpaceByCall()
     o.process_data(conn, mount_point, server)
 
+
 def _parse_args():
     parser = _new_argument_parser()
     return parser.parse_args()
+
 
 def _new_argument_parser():
     parser = argparse.ArgumentParser()
@@ -62,7 +50,8 @@ def _new_argument_parser():
                         help='SQLite Database, for munin plugins, please set db to /tmp/diskspacebycall.db')
     return parser
 
-class TelnetAsterisk(object):
+
+class TelnetAsterisk:
     def __init__(self):
         self.username = 'xivo_munin_user'
         self.password = 'jeSwupAd0'
@@ -72,47 +61,45 @@ class TelnetAsterisk(object):
         tn = self._init_socket(host)
         self._validate_connection(tn)
         data = self._get_data(tn, self.command)
-        self._close_connection(tn)
+        tn.close()
         results = self._process_data(data)
         return results
 
-    def _init_socket(self, host):
+    def _init_socket(self, host: str) -> Telnet:
     
         timeout = 2
         port = 5038
-        tn = telnetlib.Telnet()
+        tn = Telnet()
     
         tn.open(host, port, timeout)
-        tn.read_until("Asterisk Call Manager")
-        tn.write("Action: login\r\n")
-        tn.write("Username: %s\r\n" % self.username)
-        tn.write("Secret: %s\r\n" % self.password)
-        tn.write("Events: off\r\n")
-        tn.write("\r\n")
+        tn.read_until(b"Asterisk Call Manager")
+        tn.write(b"Action: login\r\n")
+        tn.write(f"Username: {self.username}\r\n".encode())
+        tn.write(f"Secret: {self.password}\r\n".encode())
+        tn.write(b"Events: off\r\n")
+        tn.write(b"\r\n")
         return tn
     
-    def _validate_connection(self, tn):
-        accepted = tn.read_until("Authentication accepted", 2)
-        if not ( accepted.find('Authentication accepted') >= 0 ):
-            print '[Error] : Asterisk authentication not accepted'
+    def _validate_connection(self, tn: Telnet):
+        accepted = tn.read_until(b"Authentication accepted", 2)
+        if not (accepted.find(b'Authentication accepted') >= 0):
+            print('[Error] : Asterisk authentication not accepted')
             sys.exit(1)
     
-    def _get_data(self, tn, command):
-        tn.write("Action: command\r\n")
-        tn.write("Command: %s\r\n" % command)
-        tn.write("\r\n")
-        data = tn.read_until("calls processed")
+    def _get_data(self, tn: Telnet, command: str):
+        tn.write(b"Action: command\r\n")
+        tn.write(f"Command: {command}\r\n".encode())
+        tn.write(b"\r\n")
+        data = tn.read_until(b"calls processed")
         return data
     
-    def _process_data(self, data):
-        last_line = data.split('\n')[-1]
-        results = last_line.split(' ')[0]
+    def _process_data(self, data: bytes) -> bytes:
+        last_line = data.split(b'\n')[-1]
+        results = last_line.split(b' ')[0]
         return results
-    
-    def _close_connection(self, tn):
-        tn.close()
 
-class DiskSpaceByCall(object):
+
+class DiskSpaceByCall:
     def __init__(self):
         self.average = 0
         self.truncate = False
@@ -126,8 +113,8 @@ class DiskSpaceByCall(object):
         self._validate_table(c, 'tbl1')
         self.last_entry = self._get_last_entry(c)
         self._calculate_average()
-        if self.truncate == True:
-            _truncate_table(c, 'tbl1')
+        if self.truncate is True:
+            self._truncate_table(c, 'tbl1')
         # Finally, it's munin that generates graphs
         #_generate_graphs()
         self._store_data(c)
@@ -152,7 +139,7 @@ class DiskSpaceByCall(object):
 
     def _calculate_average(self):
         # Calculate average between disk consumption and number of calls
-        if self.last_entry == None:
+        if self.last_entry is None:
             calls = self.nb_calls
             disk_space = self.avail_disk
             # Can't calculate average if no past entries
@@ -168,17 +155,16 @@ class DiskSpaceByCall(object):
 
     def _generate_graphs(self, avail_disk, nb_calls):
         # Generate graph disk_space/nb_calls and average/time
-        print 'not implemented'
+        print('not implemented')
 
     def _store_data(self, c):
         # Store data in DB
         try:
             t = (self.nb_calls, self.avail_disk)
             c.execute('INSERT INTO tbl1 (nbCalls, diskSpace) VALUES (?,?)', t)
-        except:
-            print '[Error] - couldnt insert into database'
+        except Exception:
+            print('[Error] - couldnt insert into database')
             raise
-            sys.exit(1)
 
     def _truncate_table(self, c, table):
         c.execute('delete from %s' % table)
@@ -186,7 +172,7 @@ class DiskSpaceByCall(object):
     def _validate_table(self, c, table):
         t = (table,)
         c.execute('select sql from sqlite_master where type = \'table\' and name = ?', t)
-        if c.fetchone() == None:
+        if c.fetchone() is None:
             try:
                 c.execute('CREATE TABLE %s ( id INTEGER PRIMARY KEY AUTOINCREMENT, t TIMESTAMP DEFAULT CURRENT_TIMESTAMP, nbCalls INTEGER, diskSpace INTEGER)' % table)
                 """
@@ -200,8 +186,9 @@ class DiskSpaceByCall(object):
                 ...> );
                 """
             except:
-                print '[Error] - couldn\'t create table in database'
+                print('[Error] - couldn\'t create table in database')
                 sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

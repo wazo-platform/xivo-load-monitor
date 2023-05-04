@@ -30,7 +30,6 @@ class XivoAsteriskMem(MuninPlugin):
                 self._category,
                 vlabel='Bytes',
                 args='--base 1024 -l 0',
-                scale=False,
             )
             graph.addField(
                 FIELD_MEM_RES,

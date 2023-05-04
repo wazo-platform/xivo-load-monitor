@@ -29,8 +29,6 @@ class XivoAsteriskSocket(MuninPlugin):
                 self._category,
                 vlabel='Boolean',
                 info=self._info,
-                scale=False,
-
             )
             graph.addField(
                 self._field_name,

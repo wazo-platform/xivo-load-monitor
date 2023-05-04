@@ -29,8 +29,6 @@ class XivoDiskSpace(MuninPlugin):
                 vlabel='Bytes',
                 info='Average space taken on disk for 1 call',
                 args='--base 1024 -l 0',
-                scale=False,
-
             )
             graph.addField(
                 self._field_name,

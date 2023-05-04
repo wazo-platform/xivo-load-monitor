@@ -61,7 +61,6 @@ class XivoCtidSocket(MuninPlugin):
                 'Asterisk simultaneous calls',
                 self._category,
                 vlabel='Nb of Calls',
-                scale=False,
                 info=self._info,
             )
             graph.addField(

@@ -33,7 +33,6 @@ class XivoAsteriskFreezeDetect(MuninPlugin):
                 'Xivo Asterisk freeze detect',
                 self._category,
                 vlabel='Boolean',
-                scale=False,
                 info=self._info,
             )
             graph.addField(

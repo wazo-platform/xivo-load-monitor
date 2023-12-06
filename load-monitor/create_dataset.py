@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2016 Avencall
+# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 import sys
 import os
 import argparse
-import ConfigParser
+import configparser
 import time
 import subprocess
 import xivo_ws
@@ -65,7 +65,7 @@ def _new_argument_parser():
 
 class ManageDataset(object):
     def __init__(self, section):
-        config = ConfigParser.RawConfigParser()
+        config = configparser.RawConfigParser()
         config.read('dataset.cfg')
 
         self.ssh_user = config.get(section, 'ssh_user')
@@ -162,7 +162,7 @@ class ManageDataset(object):
             incall_list = self._incall_list()
             try:
                 last_incall_number = int(incall_list[-1].number)
-            except Exception,e:
+            except Exception as e:
                 last_incall_number = 0
                 if self.debug: print(e)
             if self.debug and self.debug_lvl == 2: print('########### DEBUG: last_incall_number = %s' % (last_incall_number))
@@ -209,7 +209,7 @@ class ManageDataset(object):
                     return int(user.id)
                 if self.debug and self.debug_lvl == 2: print('##### DEBUG: user.lastname : %s' % (int(user.lastname)))
                 if self.debug and self.debug_lvl == 2: print('##### DEBUG: user_number : %s' % (int(user_number)))
-            except Exception,e:
+            except Exception as e:
                 if self.debug: print(e)
                 continue
 
@@ -219,18 +219,18 @@ class ManageDataset(object):
 
     def _user_context(self, offset, user_start_lastname):
         if ( offset - user_start_lastname ) < self.nb_user_in_default_context or self.nb_user_in_other_context == 0:
-            return u'default', offset + self.users_first_line
+            return 'default', offset + self.users_first_line
         else:
             old_context, old_position = self.context_user_id
             id_context = int(math.ceil(( offset - user_start_lastname - self.nb_user_in_default_context + 0.001) / self.nb_user_in_other_context))
-            context = u'context' + str(id_context)
+            context = 'context' + str(id_context)
             if old_context != id_context:
                 position = 0
             else:
                 position = old_position + 1
             self.context_user_id = (id_context, position)
             line = user_start_lastname + ( id_context * 100 ) + position + self.users_first_line
-            return u'%s' % context, u'%s' % line
+            return '%s' % context, '%s' % line
 
     def _fill_in_groups(self):
         group_list = self._group_list()
@@ -275,8 +275,8 @@ class ManageDataset(object):
         users = []
         for offset in range(user_start_lastname, self.nb_users):
             user_context, line = self._user_context(offset, user_start_lastname)
-            user_lastname = u'%s' % (str(offset).zfill(4))
-            user = User(firstname=u'User', lastname=user_lastname)
+            user_lastname = '%s' % (str(offset).zfill(4))
+            user = User(firstname='User', lastname=user_lastname)
             user.line = UserLine(context=user_context, number=line)
             if self.voicemail:
                 voicemail_name = line
@@ -298,11 +298,11 @@ class ManageDataset(object):
             print('Add agents ..')
             for offset in range(agent_start_id, agent_end_id):
                 if self.debug: print('agent_start_id: %s, agent_end_id: %s, offset: %s' % (agent_start_id, agent_end_id, offset))
-                agent = Agent(firstname=u'Agent',
+                agent = Agent(firstname='Agent',
                           #lastname=str( agent_start_id - agents_first_id + offset ),
                           lastname=str(offset),
                           number=offset,
-                          context=u'default',
+                          context='default',
                           users=[ user_id[offset - agent_start_id] ])
                 self.xs.agents.add(agent)
                 print('Agent %s number %s added on user %s' % (agent.lastname, offset, agent.users))
@@ -331,11 +331,11 @@ class ManageDataset(object):
             first_agent_index = ( offset - self.queues_first_context ) * ( self.nb_agent_by_queue - self.queue_member_overlap ) 
             if self.debug: print('first_agent_index: %s' % first_agent_index)
             print('Add queue..')
-            queue = Queue(name=u'queue%s' % offset,
-                          display_name=u'Queue %s' % offset,
+            queue = Queue(name='queue%s' % offset,
+                          display_name='Queue %s' % offset,
                           number=offset,
-                          context=u'default',
-                          ring_strategy=u'rrmemory',
+                          context='default',
+                          ring_strategy='rrmemory',
                           autopause=False,
                           agents=agent_id[first_agent_index:first_agent_index + self.nb_agent_by_queue])
 
@@ -407,13 +407,13 @@ class ManageDatasetWs(ManageDataset):
         try:
             self._prepare_context()
             #print('DEBUG, CONTEXT SKIPPED')
-        except Exception,e:
+        except Exception as e:
             print('Skipping, contexts already has a configuration ..')
             if self.debug: print(e)
         try:
             self._prepare_trunk()
             #print('DEBUG, TRUNK SKIPPED')
-        except Exception,e:
+        except Exception as e:
             print('Skipping, trunks already has a configuration ..')
             if self.debug: print(e)
         if self.user_grp != 'None':
@@ -472,7 +472,7 @@ class ManageDatasetWs(ManageDataset):
                     nb_grp_by_context = self._find_nb_grp_by_context(nb_user_by_grp)
                     if self.debug and self.debug_lvl == 2: print('DEBUG: group_number: %s, nb_grp_by_context: %s' % (group_number, nb_grp_by_context))
                     id_context = (int(math.ceil(group_number / nb_grp_by_context) +1 ))
-                    context = u'context%s' % id_context
+                    context = 'context%s' % id_context
                     group_line_number = self.group_first_context + ( id_context * 100 ) + flag
                     if flag < ( nb_grp_by_context - 1 ):
                         flag += 1
@@ -488,7 +488,7 @@ class ManageDatasetWs(ManageDataset):
 
     def _add_group(self, grp_name_nb, grp_line, context):
         print('Add group %s number %s in context %s' % (grp_name_nb, grp_line, context))
-        group = Group(name=u'Group%s' % grp_name_nb,
+        group = Group(name='Group%s' % grp_name_nb,
                       number=grp_line,
                       context=context,
                       user_ids=[])

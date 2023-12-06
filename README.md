@@ -28,3 +28,7 @@ INSERT INTO services_by_serveur VALUES (default, 9, 10);  # where 9 is the serve
 ```
 
 4. Update the SQL dump so that your new services can be restored
+
+## Logs
+
+* Load-monitor logs are written to `/var/log/apache2/error.log`

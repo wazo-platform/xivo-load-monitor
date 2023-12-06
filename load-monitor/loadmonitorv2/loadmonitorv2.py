@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -117,7 +117,7 @@ class Loadmonitorv2(object):
                 self._execute_sql(sql_watcher)
                 for service in srv['services']:
                     sql_service = 'INSERT INTO services_by_serveur (id_serveur, id_service) VALUES (%s, %s)' % (srv_id, service)
-                    print sql_service
+                    print(sql_service)
                     self._execute_sql(sql_service)
         except Exception as e:
             print(e)
@@ -126,8 +126,6 @@ class Loadmonitorv2(object):
         return True
 
     def launch_loadtest(self, loadtest_params):
-        src_ip = self._server_munin_ip(loadtest_params['server'])
-        dest_ip = self._server_ip(loadtest_params['server'])
         servername = self._name_from_id(loadtest_params['server'])
         if not self.is_test_running(servername):
             cmd = [ '%s/load-tester' % (self.xivo_loadtest), '-b', '-c',
@@ -135,15 +133,17 @@ class Loadmonitorv2(object):
                     '-d', '%s/logs/sip_logs/%s' % ('/var/www/load-monitor-v2', servername),
                     '%s/scenarios/call-then-hangup/' % (self.xivo_loadtest),
                     ]
+            print(cmd)
             try:
                 p = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 while True:
-                    output = p.stdout.readline()
+                    output = p.stdout.readline().decode('utf-8')
                     if not output:
                         raise Exception('could not retrieve the sipp process pid')
                     if re.search(r'\[\d+\]', output) is not None:
                         break
             except Exception as e:
+                print(e)
                 output = str(e)
         pid = re.split('\]', re.split('\[', output)[1])[0]
         self._launch_login_logoff_agents(loadtest_params['server'])
@@ -237,7 +237,7 @@ class Loadmonitorv2(object):
     def _launch_login_logoff_agents(self, server_id):
         servername = self._name_from_id(server_id)
         login_logoff_script = '%s/login_logoff_agents.py' % (self.xivo_loadmonitor)
-        cmd = ['python', login_logoff_script, '-H', servername]
+        cmd = ['python3', login_logoff_script, '-H', servername]
         subprocess.call(cmd)
 
     def _pid_login_logoff_agents(self, servername):
@@ -266,15 +266,15 @@ class AddServerForm(Form):
     name = TextField('nom')
     ip = TextField('ip')
     domain = TextField('domaine')
-    server_type = SelectField(u'Type du serveur', choices=types_choices)
-    watcher = SelectField(u'Serveur Munin associe', choices=munin_choices)
-    services = SelectMultipleField(u'Services monitores', choices=services_choices)
+    server_type = SelectField('Type du serveur', choices=types_choices)
+    watcher = SelectField('Serveur Munin associe', choices=munin_choices)
+    services = SelectMultipleField('Services monitores', choices=services_choices)
 
 class LaunchLoadtest(Form):
     lmv2 = Loadmonitorv2(conf)
     server_choices = lmv2._strize(lmv2.server_choices())
 
-    server = SelectField(u'Serveur cible', choices=server_choices)
+    server = SelectField('Serveur cible', choices=server_choices)
     """
     rate = TextField(u'Nombre d\'appels / periode (format: 1.0 || 2.0 || ...)', [Required()])
     rate_period = TextField(u'Periode entre 2*n appels (en s)', [Required()])

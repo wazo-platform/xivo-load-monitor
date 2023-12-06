@@ -1,23 +1,7 @@
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>
-
-#!/usr/bin/python
-
-# Copyright (C) 2013  Avencall
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -46,7 +30,7 @@ def main():
 
     hostname = parsed_args.hostname
     if hostname == None:
-        print '[Error] - hostname not defined'
+        print('[Error] - hostname not defined')
         sys.exit(1)
 
     with daemon.DaemonContext():
@@ -80,6 +64,7 @@ class LogoffLoginAgent(object):
         p = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         agent_list = []
         for line in p.stdout:
+            line = line.decode('utf-8')
             if re.search('Agent', line):
                 agent_logged = False
                 agent_number = int(re.split('/', re.split(' \(', line)[0])[1])
@@ -100,7 +85,7 @@ class LogoffLoginAgent(object):
     def _logoff_agent(self, agent_number):
         cmd = "xivo-agentctl -H %s -c 'logoff %s'" % (self.xivo_hostname, agent_number)
         print(cmd)
-        p = subprocess.call(cmd, shell=True)
+        subprocess.call(cmd, shell=True)
 
     def _logon_agent(self, agent):
         agent_number = agent['agent_number']

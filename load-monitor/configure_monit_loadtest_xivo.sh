@@ -17,6 +17,6 @@ ln -s /usr/local/src/xivo-load-monitor/load-monitor/munin-plugins/xivo_asterisk_
 ln -s /usr/share/munin/plugins/postgres_connections_db .
 sed -i 's/127\.0\.0\.1/0\.0\.0\.0/' /etc/munin/munin-node.conf.tmpl
 sed -i 's/\^127\\\.0\\\.0\\\.1\$$/\^\.\*\$/' /etc/munin/munin-node.conf.tmpl
-xivo-monitoring-update-graphics
+wazo-monitoring-update-graphics
 systemctl restart munin-node
 echo 'Munin configuration finished'

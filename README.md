@@ -32,3 +32,16 @@ INSERT INTO services_by_serveur VALUES (default, 9, 10);  # where 9 is the serve
 ## Logs
 
 * Load-monitor logs are written to `/var/log/apache2/error.log`
+
+## Configure plugins
+
+Plugins can be configured to run as a specific user:
+
+- `xivo_asterisk_file_descriptors` needs to run as root
+
+  ```shell
+  cat > /etc/munin/plugin-conf/load-monitor <<-EOF
+  [xivo_asterisk_file_descriptors]
+  user root
+  EOF
+  ```

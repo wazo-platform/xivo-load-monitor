@@ -16,15 +16,15 @@
                     {% endfor %}
                 </ul>
             </div>
-            <div id=actions>
-                <b>Actions :</b><br />
-                <ul>
-                    <li><a href="{{ url_for('add_server') }}">Add a server</a></li>
-                    <li><a href="{{ url_for('launch_test') }}">Launch a test</a></li>
-                    {% if server_list[server] == 'true' %}
-                        <li><a href="{{ url_for('stop_test', servername=server) }}">Stop the test</a></li>
-                    {% endif %}
-                </ul>
-            </div>
+            <!-- <div id=actions> -->
+            <!--     <b>Actions :</b><br /> -->
+            <!--     <ul> -->
+            <!--         <li><a href="{{ url_for('add_server') }}">Add a server</a></li> -->
+            <!--         <li><a href="{{ url_for('launch_test') }}">Launch a test</a></li> -->
+            <!--         {% if server_list[server] == 'true' %} -->
+            <!--             <li><a href="{{ url_for('stop_test', servername=server) }}">Stop the test</a></li> -->
+            <!--         {% endif %} -->
+            <!--     </ul> -->
+            <!-- </div> -->
         </div>
 {% endmacro %}
